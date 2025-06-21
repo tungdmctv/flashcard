@@ -1,7 +1,7 @@
 {
-  "name": "My Flash Card",
-  "short_name": "My Flash Card",
-  "description": "แอปพลิเคชันช่วยจำคำศัพท์ด้วยระบบ My Flash Card พร้อมการสนับสนุนจาก AI",
+  "name": "Flash Card App",
+  "short_name": "Flash Card",
+  "description": "แอปพลิเคชันช่วยจำคำศัพท์ด้วยระบบ Flash Card พร้อมการสนับสนุนจาก AI",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "display": "standalone",
