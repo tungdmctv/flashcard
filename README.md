@@ -1,6 +1,20 @@
 # Flashcard App
 
-## 1. Application Overview (English)
+Demo: [Live Demo](https://github.com/tungdmctv/flashcard)
+
+A simple yet powerful flashcard application for vocabulary learning, built with Nuxt 3. Try it out at [https://github.com/tungdmctv/flashcard](https://github.com/tungdmctv/flashcard).
+
+![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/docs/screenshot.png)
+
+Key Features:
+- 📱 Progressive Web App (PWA) - works offline
+- 💾 Local storage - no server required
+- 🎨 Modern UI with Tailwind CSS and Daisy UI
+- 🤖 AI-powered definitions using OpenAI
+- 📊 Smart learning tracking system
+- 🏷️ Tag-based organization
+
+## 1. Application Overview
 The Flashcard application is built with Nuxt3 for vocabulary memorization with these key features:
 - Data stored in Local DB
 - PWA/SSG that works without a server
