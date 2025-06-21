@@ -2,7 +2,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
   css: ['@/assets/css/tailwind.css'],
-  modules: ['nuxt-icon', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt' ],
+  modules: ['nuxt-icon', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt'],
   ssr: false,
   app: {
     baseURL: '/flashcard/',
@@ -21,10 +21,22 @@ export default defineNuxtConfig({
     },
   },
   pwa: {
-    manifest: false,
-    workbox: {
-      navigateFallback: '/',
-      globPatterns: ['**/*.{js,css,html,svg}'],
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'My Flash Card',
+      short_name: 'FlashCard',
+      start_url: '/flashcard/',
+      display: 'standalone',
+      theme_color: '#ffffff',
+      background_color: '#ffffff',
+      icons: [
+        { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' }
+      ]
     },
+    workbox: {
+      navigateFallback: '/flashcard/',
+      globPatterns: ['**/*.{js,css,html,svg,png}']
+    }
   }
 })
