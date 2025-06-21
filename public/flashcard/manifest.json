@@ -1,7 +1,7 @@
 {
-  "name": "Flash Card App",
-  "short_name": "Flash Card",
-  "description": "แอปพลิเคชันช่วยจำคำศัพท์ด้วยระบบ Flash Card พร้อมการสนับสนุนจาก AI",
+  "name": "My Flash Card",
+  "short_name": "My Flash Card",
+  "description": "แอปพลิเคชันช่วยจำคำศัพท์ด้วยระบบ My Flash Card พร้อมการสนับสนุนจาก AI",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "display": "standalone",
@@ -10,15 +10,15 @@
   "start_url": "/flashcard/",
   "icons": [
     {
-      "src": "icon-192x192.svg",
+      "src": "web-app-manifest-192x192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512x512.svg",
+      "src": "web-app-manifest-512x512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

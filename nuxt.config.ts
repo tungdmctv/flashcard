@@ -15,9 +15,10 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#ffffff' },
       ],
       link: [
-        { rel: 'manifest', href: '/manifest.json' },
-        { rel: 'icon', type: 'image/svg+xml', href: '/flashcard/icon-192x192.svg' },
-        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/flashcard/icon-192x192.png' },
+        { rel: 'manifest', href: '/flashcard/manifest.json' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/flashcard/web-app-manifest-192x192.png' },
+        { rel: 'icon', type: 'image/png', sizes: '512x512', href: '/flashcard/web-app-manifest-512x512.png' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/flashcard/favicon-32x32.png' },
         { rel: 'shortcut icon', href: '/flashcard/favicon.ico' }],
     },
   },
@@ -34,8 +35,8 @@ export default defineNuxtConfig({
       theme_color: '#ffffff',
       background_color: '#ffffff',
       icons: [
-        { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-        { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' }
+        { src: '/flashcard/web-app-manifest-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/flashcard/web-app-manifest-512x512.png', sizes: '512x512', type: 'image/png' },
       ]
     },
     workbox: {
