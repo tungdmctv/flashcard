@@ -1,0 +1,27 @@
+{
+  "languages": [
+    {"code": "th", "name": "ไทย"},
+    {"code": "zh", "name": "จีน (จีนแผ่นดินใหญ่)"},
+    {"code": "zh", "name": "จีน (ไต้หวัน)"},
+    {"code": "en", "name": "English (US)"},
+    {"code": "en", "name": "English (UK)"},
+    {"code": "km", "name": "ភាសាខ្មែរ (กัมพูชา)"},
+    {"code": "lo", "name": "ພາສາລາວ (ลาว)"},
+    {"code": "vi", "name": "Tiếng Việt (เวียดนาม)"},
+    {"code": "id", "name": "Bahasa Indonesia (อินโดนีเซีย)"},
+    {"code": "ms", "name": "Bahasa Melayu (มาเลเซีย)"},
+    {"code": "my", "name": "မြန်မာစာ (พม่า)"},
+    {"code": "hi", "name": "हिन्दी (อินเดีย)"},
+    {"code": "bn", "name": "বাংলা (เบงกอล)"},
+    {"code": "ta", "name": "தமிழ் (ทมิฬ)"},
+    {"code": "te", "name": "తెలుగు (เตลูกู)"},
+    {"code": "kn", "name": "ಕನ್ನಡ (กันนาดา)"},
+    {"code": "ml", "name": "മലയാളം (มลยาฬัม)"},
+    {"code": "fr", "name": "Français (ฝรั่งเศส)"},
+    {"code": "de", "name": "Deutsch (เยอรมัน)"},
+    {"code": "es", "name": "Español (สเปน)"},
+    {"code": "it", "name": "Italiano (อิตาลี)"},
+    {"code": "pt", "name": "Português (โปรตุเกส)"},
+    {"code": "ru", "name": "Русский (รัสเซีย)"}
+  ]
+}

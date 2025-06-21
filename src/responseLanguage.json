@@ -1,0 +1,16 @@
+{
+  "languages": [
+    {
+      "code": "th",
+      "name": "ภาษาไทย"
+    },
+    {
+      "code": "zh",
+      "name": "ภาษาจีน"
+    },
+    {
+      "code": "en",
+      "name": "English"
+    }
+  ]
+}

@@ -188,7 +188,7 @@ async function saveCard() {
   if (!word || !meaning) return
 
   // ตรวจคำซ้ำ (case‑insensitive) ถ้าเป็นการเพิ่มใหม่หรือเปลี่ยนคำ
-  const duplicate = cards.value.find(c => c.word.toLowerCase() === word.toLowerCase() && c._id !== editingCard.value?._id)
+  const duplicate = cards.value.find(c => c?.word?.toLowerCase() === word?.toLowerCase() && c._id !== editingCard.value?._id)
   if (duplicate) {
     alert(`มีคำ "${word}" อยู่แล้วในรายการ`)
     return

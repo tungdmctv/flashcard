@@ -34,18 +34,20 @@
     </div>
 
     <!-- Score Display -->
-    <div class="stats shadow mb-6">
-      <div class="stat">
-        <div class="stat-title">Played</div>
-        <div class="stat-value">{{ answeredCount }}</div>
-      </div>
-      <div class="stat">
-        <div class="stat-title">OK</div>
-        <div class="stat-value text-success">{{ correctCount }}</div>
-      </div>
-      <div class="stat">
-        <div class="stat-title">Wrong</div>
-        <div class="stat-value text-error">{{ incorrectCount }}</div>
+    <div class="w-full flex justify-center">
+      <div class="stats shadow mb-6">
+        <div class="stat">
+          <div class="stat-title">Played</div>
+          <div class="stat-value">{{ answeredCount }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">OK</div>
+          <div class="stat-value text-success">{{ correctCount }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">Wrong</div>
+          <div class="stat-value text-error">{{ incorrectCount }}</div>
+        </div>
       </div>
     </div>
 
@@ -70,6 +72,19 @@
       <p>No cards available.</p>
     </div>
 
+    <!-- Read Aloud Buttons -->
+    <div v-if="currentCard && !isGameOver" class="flex justify-center gap-2 my-4">
+      <div class="dropdown">
+        <select v-model="selectLangToSpeak" class="select select-bordered w-full">
+          <option v-for="lang in languages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
+        </select>
+      </div>
+      <button class="btn" @click.stop="speak(selectLangToSpeak)">
+        <Icon name="material-symbols:volume-up" /> อ่านออกเสียง
+      </button>
+    </div>
+
+
     <!-- End Game Modal -->
     <input type="checkbox" id="end-modal" class="modal-toggle" v-model="isGameOver" />
     <div class="modal">
@@ -89,6 +104,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import PouchDB from 'pouchdb'
+import pronunciationLanguageData from '~/src/pronunciationLanguage.json'
 
 interface Card {
   _id?: string
@@ -99,7 +115,9 @@ interface Card {
 }
 
 const db = new PouchDB<Card>('flashcards')
-
+const languages = ref(pronunciationLanguageData.languages);
+const selectLangToSpeak = ref('th-TH');
+const settings = ref<{pronunciationLanguage: string}>({ pronunciationLanguage: 'th-TH' });
 // State
 const cards = ref<Card[]>([])
 const currentIndex = ref(0)
@@ -191,6 +209,25 @@ function next() {
   isRevealed.value = false
 }
 
+
+// Text-to-Speech
+function speak(lang: string) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
+
+  const utterance = new SpeechSynthesisUtterance(currentCard.value?.word || '')
+  const langMap: Record<string, string> = { th: 'th-TH', en: 'en-US', zh: 'zh-CN' }
+  utterance.lang = langMap[lang] ?? 'en-US'
+
+  const voices = window.speechSynthesis.getVoices()
+  const voice = voices.find(v => v.lang === utterance.lang) ||
+    voices.find(v => v.lang.startsWith(utterance.lang.slice(0, 2)))
+  if (voice) utterance.voice = voice
+
+  window.speechSynthesis.cancel() // stop any ongoing speech
+  window.speechSynthesis.speak(utterance)
+}
+
+
 // Reset all stats
 async function resetStats() {
   for (const card of cards.value) {
@@ -218,5 +255,21 @@ watch(selectedTags, () => {
   if (isRandomMode.value) shuffle()
 })
 
-onMounted(loadCards)
+
+
+
+async function loadSettings() {
+  try {
+    const doc = await db.get<{pronunciationLanguage: string}>('app_settings')
+    settings.value = { pronunciationLanguage: doc.pronunciationLanguage || 'th-TH' }
+    selectLangToSpeak.value = doc.pronunciationLanguage || 'th-TH'
+  } catch (err) {
+    console.error('Failed to load settings:', err)
+  }
+}
+
+onMounted(() => {
+  loadCards()
+  loadSettings()
+})
 </script>

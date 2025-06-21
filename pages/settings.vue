@@ -55,9 +55,17 @@
                 <span class="label-text font-medium">ภาษาที่ต้องการให้ AI ตอบ</span>
               </label>
               <select v-model="settings.responseLanguage" class="select select-bordered w-full">
-                <option value="th">ภาษาไทย</option>
-                <option value="zh">ภาษาจีน</option>
-                <option value="en">English</option>
+                <option v-for="lang in responseLanguages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
+              </select>
+            </div>
+
+            <!-- Pronunciation Language -->
+            <div class="form-control w-full">
+              <label class="label">
+                <span class="label-text font-medium">ภาษาที่อ่านออกเสียง</span>
+              </label>
+              <select v-model="settings.pronunciationLanguage" class="select select-bordered w-full">
+                <option v-for="lang in languages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
               </select>
             </div>
           </div>
@@ -77,6 +85,8 @@
 import { ref, onMounted } from 'vue'
 import PouchDB from 'pouchdb'
 import * as XLSX from 'xlsx'
+import pronunciationLanguages from '~/src/pronunciationLanguage.json'
+import responseLanguageData from '~/src/responseLanguage.json'
 
 interface Settings {
   _id?: string
@@ -84,6 +94,7 @@ interface Settings {
   openaiApiKey: string
   customPrompt: string
   responseLanguage: string
+  pronunciationLanguage: string
 }
 
 interface Card {
@@ -96,10 +107,13 @@ interface Card {
 const db = new PouchDB<Settings | Card>('flashcards')
 const SETTINGS_ID = 'app_settings'
 
+const languages = ref(pronunciationLanguages.languages)
+const responseLanguages = ref<Array<{code: string, name: string}>>(responseLanguageData.languages)
 const settings = ref<Settings>({
   openaiApiKey: '',
   customPrompt: 'ช่วยแปลความหมายของคำว่า {word} พร้อมยกตัวอย่างประโยค',
-  responseLanguage: 'th'
+  responseLanguage: 'th',
+  pronunciationLanguage: 'th-TH'
 })
 const showAlert = ref(false)
 const alertMessage = ref('')
