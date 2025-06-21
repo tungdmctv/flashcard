@@ -24,7 +24,7 @@ export default defineNuxtConfig({
   },
   pwa: {
     devOptions: {
-      enabled: true   // ← เปิด SW ใน pnpm dev
+      enabled: false   // ← เปิด SW ใน pnpm dev
     },
     registerType: 'autoUpdate',
     manifest: {
@@ -40,6 +40,7 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
+      globDirectory: '.nuxt/dist/client',
       navigateFallback: '/flashcard/',
       globPatterns: ['**/*.{js,css,html,svg,png}']
     }
