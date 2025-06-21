@@ -59,9 +59,13 @@ npm run generate
    - Click cards to reveal translations
    - Mark words as "Memorized" or "Not Memorized"
    - Filter words by tags (shows all if none selected)
+   - Statistics: View total words, memorized, not memorized, and percentage
+   - Speak Out: Listen to the word pronunciation
 
 3. **Settings**:
    - Configure OpenAI API Key
    - Set Custom Prompt
+   - Import/Export Vocabulary
+   - Reset Statistics
 
 The application can be directly deployed on GitHub Pages.
