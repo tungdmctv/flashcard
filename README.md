@@ -4,9 +4,11 @@ Demo: [Live Demo](https://github.com/tungdmctv/flashcard)
 
 A simple yet powerful flashcard application for vocabulary learning, built with Nuxt 3. Try it out at [https://github.com/tungdmctv/flashcard](https://github.com/tungdmctv/flashcard).
 
-![Flashcard App Screenshot](https://github.com/tungdmctv/flashcard/screenshot-1.png)
-![Flashcard App Screenshot](https://github.com/tungdmctv/flashcard/screenshot-2.png)
-![Flashcard App Screenshot](https://github.com/tungdmctv/flashcard/screenshot-3.png)
+![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-1.png)
+
+![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-2.png)
+
+![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-3.png)
 
 Key Features:
 - 📱 Progressive Web App (PWA) - works offline
