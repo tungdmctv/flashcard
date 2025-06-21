@@ -12,8 +12,9 @@
         class="input input-bordered w-full max-w-xs" />
       <div class="dropdown">
         <label tabindex="0" class="btn m-1">กรองตามแท็ก</label>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[1]">
-          <li v-for="tag in allTags" :key="tag">
+        <ul tabindex="0"
+          class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[1] max-h-96 overflow-y-auto">
+          <li v-for="tag in allTags.filter(t => t)" :key="tag">
             <label class="cursor-pointer flex gap-2">
               <input v-model="selectedTags" :value="tag" type="checkbox" class="checkbox" />
               <span>{{ tag }}</span>
@@ -23,9 +24,18 @@
       </div>
     </div>
 
+    <!-- Pagination -->
+    <div class="flex justify-center my-8">
+      <div class="btn-group">
+        <button class="btn" :disabled="currentPage === 1" @click="currentPage--">«</button>
+        <button class="btn">หน้า {{ currentPage }}</button>
+        <button class="btn" :disabled="currentPage >= totalPages" @click="currentPage++">»</button>
+      </div>
+    </div>
+
     <!-- Card List -->
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <div v-for="card in filteredCards.filter(c => c.word)" :key="card._id" class="card bg-base-200">
+      <div v-for="card in paginatedCards" :key="card._id" class="card bg-base-200">
         <div class="card-body">
           <h2 class="card-title">{{ card.word }}</h2>
           <p>{{ card.meaning }}</p>
@@ -37,6 +47,15 @@
             <button class="btn btn-sm btn-error" @click="showDeleteConfirm(card)">ลบ</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center mt-8">
+      <div class="btn-group">
+        <button class="btn" :disabled="currentPage === 1" @click="currentPage--">«</button>
+        <button class="btn">หน้า {{ currentPage }}</button>
+        <button class="btn" :disabled="currentPage >= totalPages" @click="currentPage++">»</button>
       </div>
     </div>
 
@@ -133,6 +152,8 @@ const showAddModal = ref(false)
 const showDeleteModal = ref(false)
 const isLoadingAI = ref(false)
 const cardForm = ref({ word: '', meaning: '', tagsInput: '' })
+const currentPage = ref(1)
+const itemsPerPage = 10
 
 const { getMeaning } = useOpenAI()
 
@@ -143,14 +164,22 @@ const filteredCards = computed(() =>
   cards.value
     .filter(card => {
       const matchSearch = searchQuery.value
-        ? card.word.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        card.meaning.toLowerCase().includes(searchQuery.value.toLowerCase())
+        ? (card.word && card.word.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
+        (card.meaning && card.meaning.toLowerCase().includes(searchQuery.value.toLowerCase()))
         : true
-      const matchTags = !selectedTags.value.length || selectedTags.value.every(t => card.tags.includes(t))
-      return matchSearch && matchTags
+      const matchTags = !selectedTags.value.length || (card.tags && selectedTags.value.every(t => card.tags.includes(t)))
+      return matchSearch && matchTags && card.word
     })
     .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
-)
+),
+
+  totalPages = computed(() => Math.ceil(filteredCards.value.length / itemsPerPage)),
+
+  paginatedCards = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage
+    const end = start + itemsPerPage
+    return filteredCards.value.slice(start, end)
+  })
 
 // ----- MODAL HELPERS -----
 function openAddModal() { openEditModal() }

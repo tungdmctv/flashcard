@@ -17,9 +17,6 @@
               <NuxtLink to="/cards"><Icon name="icon-park-outline:setting-config" /> จัดการคำศัพท์</NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/all-words"><Icon name="icon-park-twotone:file-word" /> คำศัพท์ทั้งหมด</NuxtLink>
-            </li>
-            <li>
               <NuxtLink to="/practice"><Icon name="material-symbols:play-circle" /> ทายคำ</NuxtLink>
             </li>
             <li>
@@ -35,9 +32,6 @@
         <ul class="hidden lg:menu lg:menu-horizontal px-1">
           <li>
             <NuxtLink to="/cards"><Icon name="icon-park-outline:setting-config" />จัดการคำศัพท์</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/all-words"><Icon name="icon-park-twotone:file-word" />คำศัพท์ทั้งหมด</NuxtLink>
           </li>
           <li>
             <NuxtLink to="/practice"><Icon name="material-symbols:play-circle" />ทายคำ</NuxtLink>

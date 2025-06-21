@@ -73,6 +73,7 @@
           <!-- Actions -->
           <div class="flex justify-end space-x-4">
             <button class="btn btn-secondary" @click="exportWords"><Icon name="uiw:file-excel" />Export คำเป็น Excel</button>
+            <button class="btn btn-secondary" @click="importWords"><Icon name="uiw:file-excel" />Import คำจาก Excel</button>
             <button class="btn btn-primary" @click="saveSettings"><Icon name="material-symbols:save-outline-sharp" /> บันทึกการตั้งค่า</button>
           </div>
         </div>
@@ -146,6 +147,54 @@ function showFeedback(msg: string) {
   alertMessage.value = msg
   showAlert.value = true
   setTimeout(() => (showAlert.value = false), 5000)
+}
+
+async function importWords() {
+  try {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.xlsx,.xls'
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+      
+      const data = await file.arrayBuffer()
+      const workbook = XLSX.read(data)
+      const worksheet = workbook.Sheets['Flashcards']
+      const jsonData = XLSX.utils.sheet_to_json(worksheet)
+      
+      const cards = jsonData.map((row: any) => ({
+        word: row['คำ']?.toString() || '',
+        meaning: row['ความหมาย']?.toString() || '',
+        tags: row['แท็ก']?.toString().split(',').map((t: string) => t.trim()).filter(Boolean) || []
+      }))
+      
+      // Get all existing words for duplicate check
+      const existingWords = await db.allDocs({ include_docs: true })
+      const existingWordSet = new Set(existingWords.rows
+        .filter(r => (r.doc as Card)?.word)
+        .map(r => (r.doc as Card).word.toLowerCase()))
+      
+      let importedCount = 0
+      for (const card of cards) {
+        if (card.word && card.meaning && !existingWordSet.has(card.word.toLowerCase())) {
+          await db.put({
+            _id: 'card_' + Date.now(),
+            ...card
+          })
+          importedCount++
+        }
+      }
+      
+      showFeedback(`นำเข้าคำศัพท์สำเร็จ ${importedCount} คำ (ข้าม ${cards.length - importedCount} คำที่ซ้ำกัน)`)
+    }
+    
+    input.click()
+  } catch (err) {
+    console.error(err)
+    showFeedback('เกิดข้อผิดพลาดในการนำเข้าไฟล์')
+  }
 }
 
 async function exportWords() {
