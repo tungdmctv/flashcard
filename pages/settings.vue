@@ -71,10 +71,10 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex flex-wrap justify-end space-x-4 space-y-2">
-            <button class="btn btn-info" @click="importWords"><Icon name="uiw:file-excel" />Import คำจาก Excel</button>
-            <button class="btn btn-secondary" @click="exportWords"><Icon name="uiw:file-excel" />Export คำเป็น Excel</button>
-            <button class="btn btn-primary" @click="saveSettings"><Icon name="material-symbols:save-outline-sharp" /> บันทึกการตั้งค่า</button>
+          <div class="flex flex-wrap justify-end space-x-4">
+            <button class="my-1 btn btn-info" @click="importWords"><Icon name="uiw:file-excel" />Import คำจาก Excel</button>
+            <button class="my-1 btn btn-secondary" @click="exportWords"><Icon name="uiw:file-excel" />Export คำเป็น Excel</button>
+            <button class="my-1 btn btn-primary" @click="saveSettings"><Icon name="material-symbols:save-outline-sharp" /> บันทึกการตั้งค่า</button>
           </div>
         </div>
       </div>
