@@ -16,11 +16,15 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'manifest', href: '/manifest.json' },
-        { rel: 'icon', type: 'image/svg+xml', href: '/icon-192x192.svg' },
-      ],
+        { rel: 'icon', type: 'image/svg+xml', href: '/flashcard/icon-192x192.svg' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/flashcard/icon-192x192.png' },
+        { rel: 'shortcut icon', href: '/flashcard/favicon.ico' }],
     },
   },
   pwa: {
+    devOptions: {
+      enabled: true   // ← เปิด SW ใน pnpm dev
+    },
     registerType: 'autoUpdate',
     manifest: {
       name: 'My Flash Card',

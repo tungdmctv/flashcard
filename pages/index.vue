@@ -9,18 +9,16 @@
           ช่วยจำคำศัพท์ ด้วย Flash Card ด้วยคำที่คุณได้เรียนรู้มา พร้อมการสนับสนุนจาก AI
           ในการเพิ่มความหมายอัตโนมัติ
         </p>
-        <div class="flex gap-4 justify-center text-xl">
+        <div class="w-full flex flex-wrap gap-4 justify-center text-xl">
           <NuxtLink to="/cards" class="btn btn-primary text-xl">
             <Icon name="icon-park-outline:setting-config" />คำศัพท์
           </NuxtLink>
           <NuxtLink to="/practice" class="btn btn-secondary text-xl">
             <Icon name="material-symbols:play-circle" />เริ่มทายคำ
           </NuxtLink>
-          <div>
-            <button v-if="canPromptInstall" @click="installApp" class="px-4 py-2 bg-blue-500 text-white rounded">
-              <Icon name="material-symbols:download" class="w-6 h-6 inline-block"/> Install App
-            </button>
-          </div>
+          <button v-if="canPromptInstall" @click="installApp" class="px-4 py-2 bg-blue-500 text-white rounded">
+            <Icon name="material-symbols:download" class="w-6 h-6 inline-block" /> Install App
+          </button>
         </div>
       </div>
     </div>
@@ -28,6 +26,11 @@
 </template>
 
 <script setup lang="ts">
+useHead({
+  link: [
+    { rel: 'manifest', href: '/flashcard/manifest.json' }
+  ]
+})
 
 const canPromptInstall = ref(false)
 let deferredPrompt = null
