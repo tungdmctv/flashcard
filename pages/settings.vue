@@ -71,9 +71,9 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex justify-end space-x-4">
+          <div class="flex flex-wrap justify-end space-x-4 space-y-2">
+            <button class="btn btn-info" @click="importWords"><Icon name="uiw:file-excel" />Import คำจาก Excel</button>
             <button class="btn btn-secondary" @click="exportWords"><Icon name="uiw:file-excel" />Export คำเป็น Excel</button>
-            <button class="btn btn-secondary" @click="importWords"><Icon name="uiw:file-excel" />Import คำจาก Excel</button>
             <button class="btn btn-primary" @click="saveSettings"><Icon name="material-symbols:save-outline-sharp" /> บันทึกการตั้งค่า</button>
           </div>
         </div>
