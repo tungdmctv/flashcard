@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+# 👉 เพิ่มบล็อกนี้
+permissions:
+  contents: write          # ให้ workflow ผลัก (push) โค้ดได้
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,12 +18,11 @@ jobs:
         with:
           version: 9
 
-      # ติดตั้งแพ็กเกจ (ไม่ใช้ --frozen-lockfile เพราะยังไม่มี pnpm-lock.yaml)
       - name: Install deps
         run: pnpm install --no-frozen-lockfile
 
       - name: Generate static site
-        run: pnpm generate          # หรือ pnpm run generate
+        run: pnpm generate      # หรือ pnpm run generate
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
