@@ -54,6 +54,24 @@
           </nuxt-link>
         </div>
       </div>
+      
+      <!-- History Navigation -->
+      <div class="flex items-center gap-2 ml-4">
+        <button 
+          class="btn btn-sm" 
+          :disabled="sessionHistory.length===0"
+          @click="navigateHistory(-1)"
+        >
+          <Icon name="material-symbols:arrow-back" />
+        </button>
+        <button 
+          class="btn btn-sm" 
+          :disabled="sessionHistory.length===0"
+          @click="navigateHistory(1)"
+        >
+          <Icon name="material-symbols:arrow-forward" />
+        </button>
+      </div>
 
     </div>
 
@@ -131,6 +149,8 @@ const isRevealed = ref(false)
 const isRandomMode = ref(true)
 const selectedTags = ref<string[]>([])
 const isGameOver = ref(false)
+const sessionHistory = ref<string[]>([])
+const historyIndex = ref(0)
 
 // Computed Stats
 const correctCount = computed(() =>
@@ -164,10 +184,14 @@ async function loadCards() {
     .filter(doc => doc.word && !doc._id?.startsWith('_design'))
 
   cards.value = docs.map(doc => ({
-    ...doc,
-    tags: doc.tags || [],
-    stats: doc.stats || { correct: 0, incorrect: 0, lastSeen: Date.now() }
-  }))
+  ...doc,
+  tags: doc.tags || [],
+  stats: {
+    correct: doc.stats?.correct || 0,
+    incorrect: doc.stats?.incorrect || 0,
+    lastSeen: doc.stats?.lastSeen || Date.now()
+  }
+}))
   if (isRandomMode.value) shuffle()
 }
 
@@ -192,7 +216,11 @@ function toggleReveal() {
 async function handleAnswer(correct: boolean) {
   if (!currentCard.value?._id) return
   const doc = await db.get(currentCard.value._id)
-  const stats = { ...doc.stats }
+  const stats = {
+  correct: doc.stats?.correct || 0,
+  incorrect: doc.stats?.incorrect || 0,
+  lastSeen: doc.stats?.lastSeen || Date.now()
+}
   const key = correct ? 'correct' : 'incorrect';
   // Handle NaN by ensuring stats[key] is a number or defaulting to 0
   stats[key] = (Number(stats[key]) || 0) + 1;
@@ -201,6 +229,10 @@ async function handleAnswer(correct: boolean) {
   if (currentCard.value.stats) {
     currentCard.value.stats[correct ? 'correct' : 'incorrect']!++
     currentCard.value.stats.lastSeen = stats.lastSeen
+  }
+  // Add to session history
+  if (currentCard.value._id && !sessionHistory.value.includes(currentCard.value._id)) {
+    sessionHistory.value.push(currentCard.value._id)
   }
   isRevealed.value = false
   next()
@@ -215,6 +247,7 @@ function next() {
     currentIndex.value = 0
   }
   isRevealed.value = false
+  historyIndex.value = -1
 }
 
 
@@ -254,7 +287,30 @@ function endGame() {
 function restartGame() {
   isGameOver.value = false
   isRevealed.value = false
+  sessionHistory.value = []
+  historyIndex.value = -1
   isRandomMode.value ? shuffle() : (currentIndex.value = 0)
+}
+
+function navigateHistory(direction: number) {
+  if (sessionHistory.value.length === 0) return
+  
+  let newIndex = historyIndex.value + direction
+  
+  // Cycle through history when reaching either end
+  if (newIndex < 0) newIndex = sessionHistory.value.length - 1
+  else if (newIndex >= sessionHistory.value.length) newIndex = 0
+  
+  historyIndex.value = newIndex
+  
+  if (historyIndex.value >= 0) {
+    const cardId = sessionHistory.value[historyIndex.value]
+    const cardIndex = filteredCards.value.findIndex(c => c._id === cardId)
+    if (cardIndex >= 0) {
+      currentIndex.value = cardIndex
+      isRevealed.value = true
+    }
+  }
 }
 
 watch(selectedTags, () => {
