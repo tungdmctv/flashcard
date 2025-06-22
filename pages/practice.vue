@@ -22,7 +22,7 @@
           <Icon v-if="!isRandomMode" name="fe:random" />
           <Icon v-else name="lineicons:sort-amount-asc" /> {{ isRandomMode ? 'A->B' : 'Random' }}
         </button>
-      
+
         <!-- End Game -->
         <button class="btn btn-error btn-sm" @click="endGame">
           <Icon name="ic:baseline-stop-circle" /> End
@@ -114,64 +114,7 @@
         </div>
       </div>
     </div>
-
-    <!-- Add / Edit Modal -->
-    <div class="modal" :class="{ 'modal-open': showAddModal }">
-      <div class="modal-box relative max-w-2xl">
-        <button class="btn btn-sm btn-circle absolute right-2 top-2" @click="closeAddModal">✕</button>
-        <!-- Alert -->
-        <div v-if="showAlert" role="alert" class="alert alert-info shadow-lg mb-6">
-          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none"
-            viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{{ alertMessage }}</span>
-        </div>
-
-        <h3 class="text-xl font-bold mb-6">{{ editingCard ? 'แก้ไขคำศัพท์' : 'เพิ่มคำศัพท์' }}</h3>
-
-        <form @submit.prevent="saveCard" class="space-y-6">
-          <!-- Word -->
-          <div class="form-control">
-            <label class="label"><span class="label-text font-medium">คำศัพท์</span></label>
-            <input v-model="cardForm.word" type="text" required class="input input-bordered input-lg w-full" />
-          </div>
-
-          <!-- Meaning + AI -->
-          <div class="form-control">
-            <label class="label flex justify-between items-center">
-              <span class="label-text font-medium">ความหมาย</span>
-              <button type="button" class="btn btn-sm btn-outline" :disabled="!cardForm.word || isLoadingAI"
-                @click="getMeaningFromAI">
-                <Icon v-if="!isLoadingAI" name="material-symbols:magic-button" />
-                <Icon v-else name="svg-spinners:pulse-rings-3" />
-                {{ isLoadingAI ? 'กำลังโหลด...' : 'ขอความหมายจาก AI' }}
-              </button>
-            </label>
-            <textarea v-model="cardForm.meaning" required
-              class="textarea textarea-bordered textarea-lg w-full h-48 resize-none"></textarea>
-          </div>
-
-          <!-- Tags -->
-          <div class="form-control">
-            <label class="label"><span class="label-text font-medium">แท็ก (คั่นด้วย ,)</span></label>
-            <input v-model="cardForm.tagsInput" type="text" placeholder="tag1, tag2"
-              class="input input-bordered input-lg w-full" />
-          </div>
-
-          <div class="modal-action mt-2">
-            <button type="submit" class="btn btn-primary">
-              <Icon name="ri:save-3-line" /> บันทึก
-            </button>
-            <button type="button" class="btn" @click="closeAddModal">
-              <Icon name="bitcoin-icons:cross-filled" /> ยกเลิก
-            </button>
-          </div>
-        </form>
-      </div>
-      <div class="modal-backdrop" @click="closeAddModal"></div>
-    </div>
+    <AddEdit id="edit-modal" :edit="true" :card="editingCard" />
   </div>
 </template>
 
@@ -324,8 +267,6 @@ function speak(lang: string) {
   window.speechSynthesis.speak(utterance)
 }
 
-
-
 function endGame() {
   isGameOver.value = true
 }
@@ -375,73 +316,6 @@ async function loadSettings() {
   }
 }
 
-
-
-async function saveCard() {
-  // trim และตรวจสอบว่ากรอกครบ
-  const word = cardForm.value.word.trim()
-  const meaning = cardForm.value.meaning.trim()
-  if (!word || !meaning) return
-
-  // ตรวจคำซ้ำ (case‑insensitive) ถ้าเป็นการเพิ่มใหม่หรือเปลี่ยนคำ
-  const duplicate = cards.value.find(c => c?.word?.toLowerCase() === word?.toLowerCase() && c._id !== editingCard.value?._id)
-  if (duplicate) {
-    alert(`มีคำ "${word}" อยู่แล้วในรายการ`)
-    return
-  }
-
-  // จัดการแท็ก
-  const tags = cardForm.value.tagsInput.split(',').map(t => t.trim()).filter(Boolean)
-  const now = Date.now()
-  const card: Card = {
-    word,
-    meaning,
-    tags,
-    createdAt: editingCard.value?.createdAt || now,
-    updatedAt: now
-  }
-
-  // save
-  if (editingCard.value?._id) {
-    const doc = await db.get(editingCard.value._id)
-    await db.put({ ...card, _id: editingCard.value._id, _rev: doc._rev })
-  } else {
-    await db.post(card)
-  }
-  closeAddModal()
-}
-
-const { getMeaning } = useOpenAI()
-
-// ----- AI -----
-async function getMeaningFromAI() {
-  try {
-    const settingsDoc = await db.get<{ pronunciationLanguage: string }>('app_settings');
-    if (!settingsDoc?.openaiApiKey) {
-      throw new Error("OpenAI API Key is not set");
-    }
-    if (!cardForm.value.word || isLoadingAI.value) {
-      throw new Error("Please enter a word");
-    }
-    isLoadingAI.value = true
-    cardForm.value.meaning = await getMeaning(cardForm.value.word)
-  }
-  catch (e: any) {
-    showFeedback('เกิดข้อผิดพลาด : ' + e);
-    console.error(e);
-    return;
-  }
-  finally { isLoadingAI.value = false }
-}
-
-
-function showFeedback(msg: string) {
-  alertMessage.value = msg
-  showAlert.value = true
-  setTimeout(() => (showAlert.value = false), 5000)
-}
-
-function openAddModal() { openEditModal() }
 function openEditModal(card?: Card) {
   if (card) {
     editingCard.value = card
@@ -450,12 +324,21 @@ function openEditModal(card?: Card) {
     editingCard.value = null
     cardForm.value = { word: '', meaning: '', tagsInput: '' }
   }
-  showAddModal.value = true
+  setTimeout(() => {
+    openModal("edit-modal")
+  }, 40);
 }
-function closeAddModal() {
-  showAddModal.value = false
-  editingCard.value = null
+
+function openModal(id = "") {
+  const modal = document.getElementById(id)
+  modal?.classList.add('modal-open');
 }
+
+function closeModal(id = "") {
+  const modal = document.getElementById(id)
+  modal?.classList.remove('modal-open');
+}
+
 
 
 onMounted(() => {
