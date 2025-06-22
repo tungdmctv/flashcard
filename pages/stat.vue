@@ -2,6 +2,7 @@
   <div class="p-4">
     <h1 class="text-2xl font-bold mb-6">สถิติการฝึกฝน</h1>
 
+
     <div class="flex justify-between items-center mb-6">
 
       <div class="stats shadow">
@@ -18,10 +19,6 @@
           <div class="stat-value">{{ totalWrong }}</div>
         </div>
       </div>
-      <!-- Reset Stats -->
-      <button class="btn btn-error btn-sm" @click="showModal = true">
-        <Icon name="radix-icons:reset" /> Reset
-      </button>
     </div>
 
     <div class="overflow-x-auto">
@@ -64,7 +61,12 @@
         </tbody>
       </table>
     </div>
-
+    <!-- Reset Stats -->
+    <div class="w-full flex my-4 justify-center">
+      <button class="btn btn-error btn-sm" @click="showModal = true">
+        <Icon name="radix-icons:reset" /> Reset Your Statistics
+      </button>
+    </div>
     <!-- Delete Confirmation Modal -->
     <div class="modal" :class="{ 'modal-open': showModal }">
       <div class="modal-box">
@@ -81,6 +83,7 @@
       </div>
       <div class="modal-backdrop" @click="showModal = false"></div>
     </div>
+
   </div>
 </template>
 

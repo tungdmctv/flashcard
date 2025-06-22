@@ -22,15 +22,18 @@
           <Icon v-if="!isRandomMode" name="fe:random" />
           <Icon v-else name="lineicons:sort-amount-asc" /> {{ isRandomMode ? 'A->B' : 'Random' }}
         </button>
-
+        <nuxt-link to="/stat">
+          <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto mb-1" />
+        </nuxt-link>
         <!-- End Game -->
-        <button class="btn btn-error btn-sm" @click="endGame">
+        <button class="btn btn-error btn-xs" @click="endGame">
           <Icon name="ic:baseline-stop-circle" /> End
         </button>
       </div>
     </div>
 
     <!-- Score Display -->
+
     <div class="w-full flex items-center justify-center">
       <div class="stats shadow mb-6 w-full lg:w-1/2">
         <div class="stat">
@@ -45,25 +48,20 @@
           <div class="stat-title">Wrong</div>
           <div class="stat-value text-error">{{ incorrectCount }}</div>
         </div>
-        <div class="flex w-20 h-full w-full items-center justify-center text-center">
-          <nuxt-link to="/stat">
-            <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto" />
-          </nuxt-link>
-        </div>
       </div>
+    </div>
 
+    <div class="w-full flex justify-end pb-4">
       <!-- History Navigation -->
       <div class="flex items-center gap-2 ml-4">
-        <button class="btn btn-sm" :disabled="sessionHistory.length === 0" @click="navigateHistory(-1)">
+        <button class="btn btn-sm btn-outline" :disabled="sessionHistory.length === 0" @click="navigateHistory(-1)">
           <Icon name="material-symbols:arrow-back" />
         </button>
-        <button class="btn btn-sm" :disabled="sessionHistory.length === 0" @click="navigateHistory(1)">
+        <button class="btn btn-sm btn-outline" :disabled="sessionHistory.length === 0" @click="navigateHistory(1)">
           <Icon name="material-symbols:arrow-forward" />
         </button>
       </div>
-
     </div>
-
     <!-- Quiz Card -->
     <div v-if="currentCard && !isGameOver" class="card bg-base-200 max-w-2xl mx-auto cursor-pointer relative"
       @click="toggleReveal">
@@ -114,7 +112,7 @@
         </div>
       </div>
     </div>
-    <AddEdit id="edit-modal" :edit="true" :card="editingCard" />
+    <AddEdit id="edit-modal" :card="editingCard" />
   </div>
 </template>
 

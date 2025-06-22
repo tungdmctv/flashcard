@@ -38,12 +38,19 @@
                 </div>
 
                 <!-- Tags -->
+               
                 <div class="form-control">
                     <label class="label"><span class="label-text font-medium">แท็ก (คั่นด้วย ,)</span></label>
                     <input v-model="cardForm.tagsInput" type="text" placeholder="tag1, tag2"
                         class="input input-bordered input-lg w-full" />
                 </div>
-
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span v-for="tag in allTags" :key="tag" class="badge badge-lg cursor-pointer"
+                        :class="{ 'badge-primary': cardForm.tagsInput.includes(tag) }" @click="toggleTag(tag)">
+                        {{ tag }}
+                    </span>
+                </div>
+                
                 <div class="modal-action mt-2">
                     <button type="submit" class="btn btn-primary">
                         <Icon name="ri:save-3-line" /> บันทึก
@@ -62,6 +69,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import PouchDB from 'pouchdb'
 import { useOpenAI } from '~/composables/useOpenAI'
 const { getMeaning } = useOpenAI()
+const emit = defineEmits(['saveCard'])
 
 interface Card {
     _id?: string
@@ -74,28 +82,46 @@ interface Card {
 }
 
 const props = defineProps({
-    card: { type: Object as PropType<Card>, default: () => ({}) }
+    card: { type: Object as PropType<Card>, default: () => ({}) },
 })
 
 watch(() => props.card, (newVal) => {
-    if (newVal) {
-        cardForm.value.word = props.card?.word || ''
-        cardForm.value.meaning = props.card?.meaning || ''
-        cardForm.value.tagsInput = props.card?.tags || ''
-    }
+    cardForm.value.word = props.card?.word || ''
+    cardForm.value.meaning = props.card?.meaning || ''
+    cardForm.value.tagsInput = Array.isArray(props.card?.tags) ? props.card.tags.join(', ') : props.card?.tags || ''
 })
 const db = new PouchDB<Card>('flashcards')
-const cardForm = ref({
+const cardForm = ref<{ word: string; meaning: string; tagsInput: string }>({
     word: props.card?.word || '',
     meaning: props.card?.meaning || '',
-    tagsInput: props.card?.tags || ''
+    tagsInput: Array.isArray(props.card?.tags) ? props.card.tags.join(', ') : props.card?.tags || ''
 })
+
+function toggleTag(tag: string) {
+    const tagsStr = cardForm.value.tagsInput || ''
+    const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean)
+    const index = tags.indexOf(tag)
+
+    if (index === -1) {
+        tags.push(tag)
+    } else {
+        tags.splice(index, 1)
+    }
+
+    cardForm.value.tagsInput = tags.join(', ')
+}
 
 const isLoadingAI = ref(false)
 const showAlert = ref(false)
 const alertMessage = ref('')
 const cards = ref<Card[]>([])
-const showAddModal = ref(false);
+const allTags = computed(() => {
+    const tags = new Set<string>()
+    cards.value.forEach(card => {
+        card.tags?.forEach(tag => tags.add(tag))
+    })
+    return Array.from(tags)
+})
 
 // Methods
 async function loadCards() {
@@ -120,7 +146,7 @@ async function saveCard() {
     const word = cardForm.value.word.trim()
     const meaning = cardForm.value.meaning.trim()
     if (!word || !meaning) return
-    
+
     const duplicate = cards.value.find(c => c?.word?.toLowerCase() === word?.toLowerCase() && c._id !== props.card?._id)
     if (duplicate) {
         alert(`มีคำ "${word}" อยู่แล้วในรายการ`)
@@ -128,8 +154,9 @@ async function saveCard() {
     }
 
     // จัดการแท็ก
+    console.log("cardForm", cardForm.value);
 
-    const tags = cardForm.value.tagsInput.map(t => t.trim()).filter(Boolean)
+    const tags = cardForm.value.tagsInput.split(',').map((t: string) => t.trim()).filter(Boolean)
     const now = Date.now()
     const card: Card = {
         word,
@@ -147,6 +174,8 @@ async function saveCard() {
         await db.post(card)
     }
     closeAddModal();
+    loadCards();
+    emit('saveCard', true);
 }
 
 

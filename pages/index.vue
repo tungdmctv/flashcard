@@ -19,7 +19,7 @@
           <NuxtLink to="/stat" class="btn btn-success text-xl">
             <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto" />สถิติ
           </NuxtLink>
-          <NuxtLink to="/setting" class="btn btn-neutral text-xl">
+          <NuxtLink to="/settings" class="btn btn-neutral text-xl">
             <Icon name="material-symbols:settings-heart-outline" />ตั้งค่า
           </NuxtLink>
         </div>

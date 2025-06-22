@@ -60,10 +60,9 @@
     </div>
 
     <!-- Add / Edit Modal -->
-    <div class="modal" :class="{ 'modal-open': showAddModal }">
+    <!-- <div class="modal" :class="{ 'modal-open': showAddModal }">
       <div class="modal-box relative max-w-2xl">
         <button class="btn btn-sm btn-circle absolute right-2 top-2" @click="closeAddModal">✕</button>
-        <!-- Alert -->
         <div v-if="showAlert" role="alert" class="alert alert-info shadow-lg mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none"
             viewBox="0 0 24 24">
@@ -76,13 +75,11 @@
         <h3 class="text-xl font-bold mb-6">{{ editingCard ? 'แก้ไขคำศัพท์' : 'เพิ่มคำศัพท์' }}</h3>
 
         <form @submit.prevent="saveCard" class="space-y-6">
-          <!-- Word -->
           <div class="form-control">
             <label class="label"><span class="label-text font-medium">คำศัพท์</span></label>
             <input v-model="cardForm.word" type="text" required class="input input-bordered input-lg w-full" />
           </div>
 
-          <!-- Meaning + AI -->
           <div class="form-control">
             <label class="label flex justify-between items-center">
               <span class="label-text font-medium">ความหมาย</span>
@@ -96,8 +93,6 @@
             <textarea v-model="cardForm.meaning" required
               class="textarea textarea-bordered textarea-lg w-full h-48 resize-none"></textarea>
           </div>
-
-          <!-- Tags -->
           <div class="form-control">
             <label class="label"><span class="label-text font-medium">แท็ก (คั่นด้วย ,)</span></label>
             <input v-model="cardForm.tagsInput" type="text" placeholder="tag1, tag2"
@@ -115,7 +110,9 @@
         </form>
       </div>
       <div class="modal-backdrop" @click="closeAddModal"></div>
-    </div>
+    </div> -->
+    <AddEdit id="edit-modal"  :card="editingCard" @saveCard="loadCards" />
+
 
     <!-- Delete Confirmation Modal -->
     <div class="modal" :class="{ 'modal-open': showDeleteModal }">
@@ -193,21 +190,31 @@ const filteredCards = computed(() =>
   })
 
 // ----- MODAL HELPERS -----
-function openAddModal() { openEditModal() }
+function openAddModal() {
+  openEditModal()
+}
+
 function openEditModal(card?: Card) {
   if (card) {
     editingCard.value = card
     cardForm.value = { word: card.word, meaning: card.meaning, tagsInput: card.tags.join(', ') }
   } else {
-    editingCard.value = null
+    editingCard.value = {} as Card;
+    setTimeout(() => {
+      editingCard.value = null
+    }, 10);
     cardForm.value = { word: '', meaning: '', tagsInput: '' }
   }
-  showAddModal.value = true
+  setTimeout(() => {
+    openModal("edit-modal")
+  }, 40);
 }
-function closeAddModal() {
-  showAddModal.value = false
-  editingCard.value = null
+
+function openModal(id = "") {
+  const modal = document.getElementById(id)
+  modal?.classList.add('modal-open');
 }
+
 
 function showDeleteConfirm(card: Card) {
   cardToDelete.value = card
@@ -218,7 +225,7 @@ function cancelDelete() { showDeleteModal.value = false; cardToDelete.value = nu
 // ----- CRUD -----
 async function loadCards() {
   const res = await db.allDocs({ include_docs: true })
-  cards.value = res.rows.map(r => r.doc as Card)
+  cards.value = res.rows.map(r => r.doc as Card);
 }
 
 async function saveCard() {
