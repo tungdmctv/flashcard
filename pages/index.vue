@@ -16,6 +16,14 @@
           <NuxtLink to="/practice" class="btn btn-secondary text-xl">
             <Icon name="material-symbols:play-circle" />เริ่มทายคำ
           </NuxtLink>
+          <NuxtLink to="/stat" class="btn btn-success text-xl">
+            <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto" />สถิติ
+          </NuxtLink>
+          <NuxtLink to="/setting" class="btn btn-neutral text-xl">
+            <Icon name="material-symbols:settings-heart-outline" />ตั้งค่า
+          </NuxtLink>
+        </div>
+        <div class="w-full flex flex-wrap gap-4 justify-center text-xl mt-14"> 
           <button v-if="canPromptInstall" @click="installApp" class="px-4 py-2 bg-blue-500 text-white rounded">
             <Icon name="material-symbols:download" class="w-6 h-6 inline-block" /> Install App
           </button>

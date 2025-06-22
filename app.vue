@@ -9,35 +9,62 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
             </svg>
           </div>
-          <ul tabindex="0" class="menu menu-lg dropdown-content bg-base-200 rounded-box z-1 mt-3 w-52 p-2 shadow bodered border-2 border-gray-300">
+          <ul tabindex="0"
+            class="menu menu-lg dropdown-content bg-base-200 rounded-box z-1 mt-3 w-52 p-2 shadow bodered border-2 border-gray-300">
             <li>
-              <NuxtLink to="/"><Icon name="icon-park-outline:flash-payment" />  My Flash Card</NuxtLink>
+              <NuxtLink to="/">
+                <Icon name="icon-park-outline:flash-payment" /> My Flash Card
+              </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/cards"><Icon name="icon-park-outline:setting-config" /> จัดการคำศัพท์</NuxtLink>
+              <NuxtLink to="/cards">
+                <Icon name="icon-park-outline:setting-config" /> จัดการคำศัพท์
+              </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/practice"><Icon name="material-symbols:play-circle" /> ทายคำ</NuxtLink>
+              <NuxtLink to="/practice">
+                <Icon name="material-symbols:play-circle" /> ทายคำ
+              </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/settings"><Icon name="material-symbols:settings-heart-outline" /> ตั้งค่า</NuxtLink>
+              <nuxt-link to="/stat">
+                <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto" /> สถิติการฝึกฝน
+              </nuxt-link>
+            </li>
+            <li>
+              <NuxtLink to="/settings">
+                <Icon name="material-symbols:settings-heart-outline" /> ตั้งค่า
+              </NuxtLink>
             </li>
           </ul>
         </div>
       </div>
       <div class="navbar-center">
-        <NuxtLink to="/" class="btn btn-warning text-xl"><Icon name="icon-park-outline:flash-payment" /> My Flash Card</NuxtLink>
+        <NuxtLink to="/" class="btn btn-warning text-xl">
+          <Icon name="icon-park-outline:flash-payment" /> My Flash Card
+        </NuxtLink>
       </div>
       <div class="navbar-end">
         <ul class="hidden lg:menu lg:menu-horizontal px-1">
           <li>
-            <NuxtLink to="/cards"><Icon name="icon-park-outline:setting-config" />จัดการคำศัพท์</NuxtLink>
+            <NuxtLink to="/cards">
+              <Icon name="icon-park-outline:setting-config" />จัดการคำศัพท์
+            </NuxtLink>
           </li>
           <li>
-            <NuxtLink to="/practice"><Icon name="material-symbols:play-circle" />ทายคำ</NuxtLink>
+            <NuxtLink to="/practice">
+              <Icon name="material-symbols:play-circle" />ทายคำ
+            </NuxtLink>
           </li>
           <li>
-            <NuxtLink to="/settings"><Icon name="material-symbols:settings-heart-outline" />ตั้งค่า</NuxtLink>
+            <nuxt-link to="/stat">
+              <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto" /> สถิติ
+            </nuxt-link>
+          </li>
+          <li>
+            <NuxtLink to="/settings">
+              <Icon name="material-symbols:settings-heart-outline" />ตั้งค่า
+            </NuxtLink>
           </li>
         </ul>
       </div>

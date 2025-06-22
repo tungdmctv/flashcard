@@ -1,8 +1,8 @@
-# Flashcard App
+# My Flash Card App
 
 Demo: [Live Demo](https://tungdmctv.github.io/flashcard/)
 
-A simple yet powerful flashcard application for vocabulary learning, built with Nuxt 3. Try it out at [https://tungdmctv.github.io/flashcard/](https://tungdmctv.github.io/flashcard/).
+A simple yet powerful custom your flashcard application for vocabulary learning, built with Nuxt 3. Try it out at [https://tungdmctv.github.io/flashcard/](https://tungdmctv.github.io/flashcard/).
 
 ![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-1.png)
 
@@ -14,10 +14,14 @@ Key Features:
 - 🤖 AI-powered definitions using OpenAI
 - 📊 Smart learning tracking system
 - 🏷️ Tag-based organization
-
-![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-2.png)
+- 📚 Word filter by tags
+- 📊 Statistics dashboard
 
 ![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-3.png)
+
+![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-6.png)
+
+![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-5.png)
 
 ## 1. Application Overview
 The Flashcard application is built with Nuxt3 for vocabulary memorization with these key features:
@@ -49,6 +53,21 @@ npm run build
 npm run generate
 ```
 
+## OR PWA Installation
+### 1. Visit the Live Demo
+You can access the live demo of the Flashcard application at [https://tungdmctv.github.io/flashcard/](https://tungdmctv.github.io/flashcard/).
+
+### 2. Install as PWA
+To install the application as a PWA on your device, follow these steps:
+1. Visit the live demo link: [https://tungdmctv.github.io/flashcard/](https://tungdmctv.github.io/flashcard/)
+2. For iOS: Tap the "Install App" or "Add to Home Screen" button
+3. For Android: Tap the menu button and select "Install App" or "Add to Home Screen"
+4. For Desktop: Click the install icon in your browser's address bar
+
+![Flashcard App Screenshot](https://raw.githubusercontent.com/tungdmctv/flashcard/main/public/flashcard/Screenshot-4.png)
+
+The app will install as a PWA and work offline on your device.
+
 ## 3. Usage Guide
 1. **Vocabulary Management**:
    - Add new words using "Add Vocabulary" button
@@ -69,4 +88,5 @@ npm run generate
    - Import/Export Vocabulary
    - Reset Statistics
 
-The application can be directly deployed on GitHub Pages.
+4. **Statistics**:
+   - View detailed statistics on words, including total, memorized, not memorized, and percentage

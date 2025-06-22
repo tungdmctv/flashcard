@@ -63,6 +63,16 @@
     <div class="modal" :class="{ 'modal-open': showAddModal }">
       <div class="modal-box relative max-w-2xl">
         <button class="btn btn-sm btn-circle absolute right-2 top-2" @click="closeAddModal">✕</button>
+        <!-- Alert -->
+        <div v-if="showAlert" role="alert" class="alert alert-info shadow-lg mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ alertMessage }}</span>
+        </div>
+
         <h3 class="text-xl font-bold mb-6">{{ editingCard ? 'แก้ไขคำศัพท์' : 'เพิ่มคำศัพท์' }}</h3>
 
         <form @submit.prevent="saveCard" class="space-y-6">
@@ -141,7 +151,8 @@ interface Card {
 }
 
 const db = new PouchDB<Card>('flashcards')
-
+const showAlert = ref(false)
+const alertMessage = ref('')
 // ----- STATE -----
 const cards = ref<Card[]>([])
 const searchQuery = ref('')
@@ -256,12 +267,31 @@ async function confirmDelete() {
 }
 
 // ----- AI -----
+
 async function getMeaningFromAI() {
-  if (!cardForm.value.word || isLoadingAI.value) return
-  isLoadingAI.value = true
-  try { cardForm.value.meaning = await getMeaning(cardForm.value.word) }
-  catch (e) { console.error(e) }
+  try {
+    const settingsDoc = await db.get<{ pronunciationLanguage: string }>('app_settings');
+    if (!settingsDoc?.openaiApiKey) {
+      throw new Error("OpenAI API Key is not set");
+    }
+    if (!cardForm.value.word || isLoadingAI.value) {
+      throw new Error("Please enter a word");
+    }
+    isLoadingAI.value = true
+    cardForm.value.meaning = await getMeaning(cardForm.value.word)
+  }
+  catch (e: any) {
+    showFeedback('เกิดข้อผิดพลาด : ' + e);
+    console.error(e);
+    return;
+  }
   finally { isLoadingAI.value = false }
+}
+
+function showFeedback(msg: string) {
+  alertMessage.value = msg
+  showAlert.value = true
+  setTimeout(() => (showAlert.value = false), 5000)
 }
 
 onMounted(loadCards)

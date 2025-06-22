@@ -18,6 +18,10 @@
           <div class="stat-value">{{ totalWrong }}</div>
         </div>
       </div>
+      <!-- Reset Stats -->
+      <button class="btn btn-error btn-sm" @click="showModal = true">
+        <Icon name="radix-icons:reset" /> Reset
+      </button>
     </div>
 
     <div class="overflow-x-auto">
@@ -60,6 +64,23 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" :class="{ 'modal-open': showModal }">
+      <div class="modal-box">
+        <h3 class="text-lg font-bold mb-4">ยืนยันการ Reset</h3>
+        <p>คุณต้องการ Reset ประวัติการเล่นของคุณ ใช่หรือไม่?</p>
+        <div class="modal-action">
+          <button class="btn btn-error" @click="resetStats">
+            <Icon name="material-symbols:delete-outline" /> ยืนยัน
+          </button>
+          <button class="btn" @click="showModal = false">
+            <Icon name="bitcoin-icons:cross-filled" /> ยกเลิก
+          </button>
+        </div>
+      </div>
+      <div class="modal-backdrop" @click="showModal = false"></div>
+    </div>
   </div>
 </template>
 
@@ -82,7 +103,7 @@ const db = new PouchDB<Card>('flashcards')
 const stats = ref<Card[]>([])
 const sortField = ref<'word' | 'correct' | 'wrong'>('correct')
 const sortDirection = ref<'asc' | 'desc'>('desc')
-
+const showModal = ref(false)
 function toggleSort(field: 'word' | 'correct' | 'wrong') {
   if (sortField.value === field) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
@@ -131,6 +152,21 @@ function getSuccessRate(card: Card) {
   if (total === 0) return 0
   const rate = (card.stats.correct / total) * 100
   return Math.round(rate * 100) / 100 // Keep 2 decimal places
+}
+
+// Reset all stats
+async function resetStats() {
+  const cards = await db.allDocs({ include_docs: true })
+  stats.value = cards.rows.map(r => r.doc as Card);
+
+  for (const card of stats.value) {
+    if (!card._id) continue
+    const doc = await db.get(card._id)
+    const stat = { correct: 0, incorrect: 0, lastSeen: Date.now() }
+    await db.put({ ...doc, stats: stat })
+  }
+  showModal.value = false;
+  loadStats();
 }
 
 async function loadStats() {

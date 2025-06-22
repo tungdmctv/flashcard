@@ -22,10 +22,7 @@
           <Icon v-if="!isRandomMode" name="fe:random" />
           <Icon v-else name="lineicons:sort-amount-asc" /> {{ isRandomMode ? 'A->B' : 'Random' }}
         </button>
-        <!-- Reset Stats -->
-        <button class="btn btn-warning btn-sm" @click="resetStats">
-          <Icon name="radix-icons:reset" /> Reset
-        </button>
+      
         <!-- End Game -->
         <button class="btn btn-error btn-sm" @click="endGame">
           <Icon name="ic:baseline-stop-circle" /> End
@@ -54,21 +51,13 @@
           </nuxt-link>
         </div>
       </div>
-      
+
       <!-- History Navigation -->
       <div class="flex items-center gap-2 ml-4">
-        <button 
-          class="btn btn-sm" 
-          :disabled="sessionHistory.length===0"
-          @click="navigateHistory(-1)"
-        >
+        <button class="btn btn-sm" :disabled="sessionHistory.length === 0" @click="navigateHistory(-1)">
           <Icon name="material-symbols:arrow-back" />
         </button>
-        <button 
-          class="btn btn-sm" 
-          :disabled="sessionHistory.length===0"
-          @click="navigateHistory(1)"
-        >
+        <button class="btn btn-sm" :disabled="sessionHistory.length === 0" @click="navigateHistory(1)">
           <Icon name="material-symbols:arrow-forward" />
         </button>
       </div>
@@ -76,8 +65,11 @@
     </div>
 
     <!-- Quiz Card -->
-    <div v-if="currentCard && !isGameOver" class="card bg-base-200 max-w-2xl mx-auto cursor-pointer"
+    <div v-if="currentCard && !isGameOver" class="card bg-base-200 max-w-2xl mx-auto cursor-pointer relative"
       @click="toggleReveal">
+      <div @click="openEditModal(currentCard)" class="absolute top-2 right-2">
+        <Icon name="material-symbols:edit-square-outline" />
+      </div>
       <div class="card-body items-center text-center">
         <h2 class="card-title text-6xl mb-4 py-6">{{ currentCard.word }}</h2>
         <!-- meaning with line breaks -->
@@ -122,6 +114,64 @@
         </div>
       </div>
     </div>
+
+    <!-- Add / Edit Modal -->
+    <div class="modal" :class="{ 'modal-open': showAddModal }">
+      <div class="modal-box relative max-w-2xl">
+        <button class="btn btn-sm btn-circle absolute right-2 top-2" @click="closeAddModal">✕</button>
+        <!-- Alert -->
+        <div v-if="showAlert" role="alert" class="alert alert-info shadow-lg mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ alertMessage }}</span>
+        </div>
+
+        <h3 class="text-xl font-bold mb-6">{{ editingCard ? 'แก้ไขคำศัพท์' : 'เพิ่มคำศัพท์' }}</h3>
+
+        <form @submit.prevent="saveCard" class="space-y-6">
+          <!-- Word -->
+          <div class="form-control">
+            <label class="label"><span class="label-text font-medium">คำศัพท์</span></label>
+            <input v-model="cardForm.word" type="text" required class="input input-bordered input-lg w-full" />
+          </div>
+
+          <!-- Meaning + AI -->
+          <div class="form-control">
+            <label class="label flex justify-between items-center">
+              <span class="label-text font-medium">ความหมาย</span>
+              <button type="button" class="btn btn-sm btn-outline" :disabled="!cardForm.word || isLoadingAI"
+                @click="getMeaningFromAI">
+                <Icon v-if="!isLoadingAI" name="material-symbols:magic-button" />
+                <Icon v-else name="svg-spinners:pulse-rings-3" />
+                {{ isLoadingAI ? 'กำลังโหลด...' : 'ขอความหมายจาก AI' }}
+              </button>
+            </label>
+            <textarea v-model="cardForm.meaning" required
+              class="textarea textarea-bordered textarea-lg w-full h-48 resize-none"></textarea>
+          </div>
+
+          <!-- Tags -->
+          <div class="form-control">
+            <label class="label"><span class="label-text font-medium">แท็ก (คั่นด้วย ,)</span></label>
+            <input v-model="cardForm.tagsInput" type="text" placeholder="tag1, tag2"
+              class="input input-bordered input-lg w-full" />
+          </div>
+
+          <div class="modal-action mt-2">
+            <button type="submit" class="btn btn-primary">
+              <Icon name="ri:save-3-line" /> บันทึก
+            </button>
+            <button type="button" class="btn" @click="closeAddModal">
+              <Icon name="bitcoin-icons:cross-filled" /> ยกเลิก
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-backdrop" @click="closeAddModal"></div>
+    </div>
   </div>
 </template>
 
@@ -151,6 +201,12 @@ const selectedTags = ref<string[]>([])
 const isGameOver = ref(false)
 const sessionHistory = ref<string[]>([])
 const historyIndex = ref(0)
+const showAlert = ref(false)
+const alertMessage = ref('')
+const editingCard = ref<Card | null>(null)
+const showAddModal = ref(false)
+const isLoadingAI = ref(false)
+const cardForm = ref({ word: '', meaning: '', tagsInput: '' })
 
 // Computed Stats
 const correctCount = computed(() =>
@@ -184,14 +240,14 @@ async function loadCards() {
     .filter(doc => doc.word && !doc._id?.startsWith('_design'))
 
   cards.value = docs.map(doc => ({
-  ...doc,
-  tags: doc.tags || [],
-  stats: {
-    correct: doc.stats?.correct || 0,
-    incorrect: doc.stats?.incorrect || 0,
-    lastSeen: doc.stats?.lastSeen || Date.now()
-  }
-}))
+    ...doc,
+    tags: doc.tags || [],
+    stats: {
+      correct: doc.stats?.correct || 0,
+      incorrect: doc.stats?.incorrect || 0,
+      lastSeen: doc.stats?.lastSeen || Date.now()
+    }
+  }))
   if (isRandomMode.value) shuffle()
 }
 
@@ -217,10 +273,10 @@ async function handleAnswer(correct: boolean) {
   if (!currentCard.value?._id) return
   const doc = await db.get(currentCard.value._id)
   const stats = {
-  correct: doc.stats?.correct || 0,
-  incorrect: doc.stats?.incorrect || 0,
-  lastSeen: doc.stats?.lastSeen || Date.now()
-}
+    correct: doc.stats?.correct || 0,
+    incorrect: doc.stats?.incorrect || 0,
+    lastSeen: doc.stats?.lastSeen || Date.now()
+  }
   const key = correct ? 'correct' : 'incorrect';
   // Handle NaN by ensuring stats[key] is a number or defaulting to 0
   stats[key] = (Number(stats[key]) || 0) + 1;
@@ -269,16 +325,6 @@ function speak(lang: string) {
 }
 
 
-// Reset all stats
-async function resetStats() {
-  for (const card of cards.value) {
-    if (!card._id) continue
-    const doc = await db.get(card._id)
-    const stats = { correct: 0, incorrect: 0, lastSeen: Date.now() }
-    await db.put({ ...doc, stats })
-    card.stats = stats
-  }
-}
 
 function endGame() {
   isGameOver.value = true
@@ -294,15 +340,15 @@ function restartGame() {
 
 function navigateHistory(direction: number) {
   if (sessionHistory.value.length === 0) return
-  
+
   let newIndex = historyIndex.value + direction
-  
+
   // Cycle through history when reaching either end
   if (newIndex < 0) newIndex = sessionHistory.value.length - 1
   else if (newIndex >= sessionHistory.value.length) newIndex = 0
-  
+
   historyIndex.value = newIndex
-  
+
   if (historyIndex.value >= 0) {
     const cardId = sessionHistory.value[historyIndex.value]
     const cardIndex = filteredCards.value.findIndex(c => c._id === cardId)
@@ -328,6 +374,89 @@ async function loadSettings() {
     console.error('Failed to load settings:', err)
   }
 }
+
+
+
+async function saveCard() {
+  // trim และตรวจสอบว่ากรอกครบ
+  const word = cardForm.value.word.trim()
+  const meaning = cardForm.value.meaning.trim()
+  if (!word || !meaning) return
+
+  // ตรวจคำซ้ำ (case‑insensitive) ถ้าเป็นการเพิ่มใหม่หรือเปลี่ยนคำ
+  const duplicate = cards.value.find(c => c?.word?.toLowerCase() === word?.toLowerCase() && c._id !== editingCard.value?._id)
+  if (duplicate) {
+    alert(`มีคำ "${word}" อยู่แล้วในรายการ`)
+    return
+  }
+
+  // จัดการแท็ก
+  const tags = cardForm.value.tagsInput.split(',').map(t => t.trim()).filter(Boolean)
+  const now = Date.now()
+  const card: Card = {
+    word,
+    meaning,
+    tags,
+    createdAt: editingCard.value?.createdAt || now,
+    updatedAt: now
+  }
+
+  // save
+  if (editingCard.value?._id) {
+    const doc = await db.get(editingCard.value._id)
+    await db.put({ ...card, _id: editingCard.value._id, _rev: doc._rev })
+  } else {
+    await db.post(card)
+  }
+  closeAddModal()
+}
+
+const { getMeaning } = useOpenAI()
+
+// ----- AI -----
+async function getMeaningFromAI() {
+  try {
+    const settingsDoc = await db.get<{ pronunciationLanguage: string }>('app_settings');
+    if (!settingsDoc?.openaiApiKey) {
+      throw new Error("OpenAI API Key is not set");
+    }
+    if (!cardForm.value.word || isLoadingAI.value) {
+      throw new Error("Please enter a word");
+    }
+    isLoadingAI.value = true
+    cardForm.value.meaning = await getMeaning(cardForm.value.word)
+  }
+  catch (e: any) {
+    showFeedback('เกิดข้อผิดพลาด : ' + e);
+    console.error(e);
+    return;
+  }
+  finally { isLoadingAI.value = false }
+}
+
+
+function showFeedback(msg: string) {
+  alertMessage.value = msg
+  showAlert.value = true
+  setTimeout(() => (showAlert.value = false), 5000)
+}
+
+function openAddModal() { openEditModal() }
+function openEditModal(card?: Card) {
+  if (card) {
+    editingCard.value = card
+    cardForm.value = { word: card.word, meaning: card.meaning, tagsInput: card.tags.join(', ') }
+  } else {
+    editingCard.value = null
+    cardForm.value = { word: '', meaning: '', tagsInput: '' }
+  }
+  showAddModal.value = true
+}
+function closeAddModal() {
+  showAddModal.value = false
+  editingCard.value = null
+}
+
 
 onMounted(() => {
   loadCards()
