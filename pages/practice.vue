@@ -4,7 +4,7 @@
     <div class="flex justify-end items-center mb-6">
       <div class="flex flex-wrap justify-end gap-4 items-center">
         <!-- Tag Filter -->
-        <div class="dropdown">
+        <div class="dropdown dropdown-sm">
           <label tabindex="0" class="btn m-1">
             <Icon name="material-symbols:label-important-rounded" /> Tags
           </label>
@@ -18,7 +18,7 @@
           </ul>
         </div>
         <!-- Mode Toggle -->
-        <button class="btn" @click="toggleMode">
+        <button class="btn btn-sm" @click="toggleMode">
           <Icon v-if="!isRandomMode" name="fe:random" />
           <Icon v-else name="lineicons:sort-amount-asc" /> {{ isRandomMode ? 'A->B' : 'Random' }}
         </button>
@@ -34,8 +34,8 @@
     </div>
 
     <!-- Score Display -->
-    <div class="w-full flex justify-center">
-      <div class="stats shadow mb-6">
+    <div class="w-full flex items-center justify-center">
+      <div class="stats shadow mb-6 w-full lg:w-1/2">
         <div class="stat">
           <div class="stat-title">Played</div>
           <div class="stat-value">{{ answeredCount }}</div>
@@ -48,7 +48,13 @@
           <div class="stat-title">Wrong</div>
           <div class="stat-value text-error">{{ incorrectCount }}</div>
         </div>
+        <div class="flex w-20 h-full w-full items-center justify-center text-center">
+          <nuxt-link to="/stat">
+            <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto" />
+          </nuxt-link>
+        </div>
       </div>
+
     </div>
 
     <!-- Quiz Card -->
@@ -117,7 +123,7 @@ interface Card {
 const db = new PouchDB<Card>('flashcards')
 const languages = ref(pronunciationLanguageData.languages);
 const selectLangToSpeak = ref('th-TH');
-const settings = ref<{pronunciationLanguage: string}>({ pronunciationLanguage: 'th-TH' });
+const settings = ref<{ pronunciationLanguage: string }>({ pronunciationLanguage: 'th-TH' });
 // State
 const cards = ref<Card[]>([])
 const currentIndex = ref(0)
@@ -187,9 +193,11 @@ async function handleAnswer(correct: boolean) {
   if (!currentCard.value?._id) return
   const doc = await db.get(currentCard.value._id)
   const stats = { ...doc.stats }
-  stats[correct ? 'correct' : 'incorrect']!++
-  stats.lastSeen = Date.now()
-  await db.put({ ...doc, stats })
+  const key = correct ? 'correct' : 'incorrect';
+  // Handle NaN by ensuring stats[key] is a number or defaulting to 0
+  stats[key] = (Number(stats[key]) || 0) + 1;
+  stats.lastSeen = Date.now();
+  await db.put({ ...doc, stats });
   if (currentCard.value.stats) {
     currentCard.value.stats[correct ? 'correct' : 'incorrect']!++
     currentCard.value.stats.lastSeen = stats.lastSeen
@@ -202,7 +210,7 @@ function next() {
   if (currentIndex.value < filteredCards.value.length - 1) {
     currentIndex.value++
   } else if (isRandomMode.value) {
-    shuffle()
+    shuffle();
   } else {
     currentIndex.value = 0
   }
@@ -255,12 +263,9 @@ watch(selectedTags, () => {
   if (isRandomMode.value) shuffle()
 })
 
-
-
-
 async function loadSettings() {
   try {
-    const doc = await db.get<{pronunciationLanguage: string}>('app_settings')
+    const doc = await db.get<{ pronunciationLanguage: string }>('app_settings');
     settings.value = { pronunciationLanguage: doc.pronunciationLanguage || 'th-TH' }
     selectLangToSpeak.value = doc.pronunciationLanguage || 'th-TH'
   } catch (err) {

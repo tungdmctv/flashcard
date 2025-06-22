@@ -1,0 +1,142 @@
+<template>
+  <div class="p-4">
+    <h1 class="text-2xl font-bold mb-6">สถิติการฝึกฝน</h1>
+
+    <div class="flex justify-between items-center mb-6">
+
+      <div class="stats shadow">
+        <div class="stat">
+          <div class="stat-title">คำศัพท์ทั้งหมด</div>
+          <div class="stat-value">{{ stats.length }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">ถูกทั้งหมด</div>
+          <div class="stat-value">{{ totalCorrect }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">ผิดทั้งหมด</div>
+          <div class="stat-value">{{ totalWrong }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table mx-auto table-xl w-full">
+        <thead>
+          <tr>
+            <th @click="toggleSort('word')" class="cursor-pointer hover:font-bold">
+              คำศัพท์
+              <span v-if="sortField === 'word'" class="ml-1">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+            </th>
+            <th @click="toggleSort('correct')" class="cursor-pointer hover:font-bold">
+              ถูก
+              <span v-if="sortField === 'correct'" class="ml-1">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+            </th>
+            <th @click="toggleSort('wrong')" class="cursor-pointer hover:font-bold">
+              ผิด
+              <span v-if="sortField === 'wrong'" class="ml-1">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+            </th>
+            <th>อัตราความสำเร็จ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in sortedStats.filter(w => w.word)" :key="item._id">
+            <td>{{ item.word }}</td>
+            <td>{{ item.stats?.correct || 0 }}</td>
+            <td>{{ item.stats?.wrong || 0 }}</td>
+            <td>
+              <div class="flex items-center gap-2">
+                <progress class="progress progress-primary w-32" :value="getSuccessRate(item)" max="100"></progress>
+                <span>{{ getSuccessRate(item) }}%</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import PouchDB from 'pouchdb'
+
+interface Card {
+  _id?: string
+  word: string
+  meaning: string
+  tags: string[]
+  stats?: {
+    correct: number
+    wrong: number
+  }
+}
+
+const db = new PouchDB<Card>('flashcards')
+const stats = ref<Card[]>([])
+const sortField = ref<'word' | 'correct' | 'wrong'>('correct')
+const sortDirection = ref<'asc' | 'desc'>('desc')
+
+function toggleSort(field: 'word' | 'correct' | 'wrong') {
+  if (sortField.value === field) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortDirection.value = 'desc'
+  }
+}
+
+const totalCorrect = computed(() =>
+  stats.value.reduce((sum, card) => sum + (card.stats?.correct || 0), 0)
+)
+
+const totalWrong = computed(() =>
+  stats.value.reduce((sum, card) => sum + (card.stats?.wrong || 0), 0)
+)
+
+const sortedStats = computed(() => {
+  return [...stats.value].sort((a, b) => {
+    const aCorrect = a.stats?.correct || 0
+    const bCorrect = b.stats?.correct || 0
+    const aWrong = a.stats?.wrong || 0
+    const bWrong = b.stats?.wrong || 0
+
+    let comparison = 0
+
+    switch (sortField.value) {
+      case 'word':
+        comparison = a.word.localeCompare(b.word)
+        break
+      case 'correct':
+        comparison = aCorrect - bCorrect
+        break
+      case 'wrong':
+        comparison = aWrong - bWrong
+        break
+    }
+
+    return sortDirection.value === 'asc' ? comparison : -comparison
+  })
+})
+
+function getSuccessRate(card: Card) {
+  if (!card.stats) return 0
+  const total = (card.stats.correct || 0) + (card.stats.wrong || 0)
+  if (total === 0) return 0
+  const rate = (card.stats.correct / total) * 100
+  return Math.round(rate * 100) / 100 // Keep 2 decimal places
+}
+
+async function loadStats() {
+  const res = await db.allDocs({ include_docs: true })
+  stats.value = res.rows.map(r => r.doc as Card)
+}
+
+onMounted(loadStats)
+</script>
