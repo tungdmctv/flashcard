@@ -90,3 +90,6 @@ The app will install as a PWA and work offline on your device.
 
 4. **Statistics**:
    - View detailed statistics on words, including total, memorized, not memorized, and percentage
+
+**Note**
+   - No vocabulary data initially - you'll need to add words manually or import from previously saved data
