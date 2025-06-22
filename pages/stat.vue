@@ -37,9 +37,9 @@
                 {{ sortDirection === 'asc' ? '↑' : '↓' }}
               </span>
             </th>
-            <th @click="toggleSort('wrong')" class="cursor-pointer hover:font-bold">
+            <th @click="toggleSort('incorrect')" class="cursor-pointer hover:font-bold">
               ผิด
-              <span v-if="sortField === 'wrong'" class="ml-1">
+              <span v-if="sortField === 'incorrect'" class="ml-1">
                 {{ sortDirection === 'asc' ? '↑' : '↓' }}
               </span>
             </th>
@@ -50,7 +50,7 @@
           <tr v-for="item in sortedStats.filter(w => w.word)" :key="item._id">
             <td>{{ item.word }}</td>
             <td>{{ item.stats?.correct || 0 }}</td>
-            <td>{{ item.stats?.wrong || 0 }}</td>
+            <td>{{ item.stats?.incorrect || 0 }}</td>
             <td>
               <div class="flex items-center gap-2">
                 <progress class="progress progress-primary w-32" :value="getSuccessRate(item)" max="100"></progress>
@@ -98,16 +98,16 @@ interface Card {
   tags: string[]
   stats?: {
     correct: number
-    wrong: number
+    incorrect: number
   }
 }
 
 const db = new PouchDB<Card>('flashcards')
 const stats = ref<Card[]>([])
-const sortField = ref<'word' | 'correct' | 'wrong'>('correct')
+const sortField = ref<'word' | 'correct' | 'incorrect'>('correct')
 const sortDirection = ref<'asc' | 'desc'>('desc')
 const showModal = ref(false)
-function toggleSort(field: 'word' | 'correct' | 'wrong') {
+function toggleSort(field: 'word' | 'correct' | 'incorrect') {
   if (sortField.value === field) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -121,15 +121,15 @@ const totalCorrect = computed(() =>
 )
 
 const totalWrong = computed(() =>
-  stats.value.reduce((sum, card) => sum + (card.stats?.wrong || 0), 0)
+  stats.value.reduce((sum, card) => sum + (card.stats?.incorrect || 0), 0)
 )
 
 const sortedStats = computed(() => {
   return [...stats.value].sort((a, b) => {
     const aCorrect = a.stats?.correct || 0
     const bCorrect = b.stats?.correct || 0
-    const aWrong = a.stats?.wrong || 0
-    const bWrong = b.stats?.wrong || 0
+    const aWrong = a.stats?.incorrect || 0
+    const bWrong = b.stats?.incorrect || 0
 
     let comparison = 0
 
@@ -140,7 +140,7 @@ const sortedStats = computed(() => {
       case 'correct':
         comparison = aCorrect - bCorrect
         break
-      case 'wrong':
+      case 'incorrect':
         comparison = aWrong - bWrong
         break
     }
@@ -151,7 +151,7 @@ const sortedStats = computed(() => {
 
 function getSuccessRate(card: Card) {
   if (!card.stats) return 0
-  const total = (card.stats.correct || 0) + (card.stats.wrong || 0)
+  const total = (card.stats.correct || 0) + (card.stats.incorrect || 0)
   if (total === 0) return 0
   const rate = (card.stats.correct / total) * 100
   return Math.round(rate * 100) / 100 // Keep 2 decimal places
