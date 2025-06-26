@@ -17,23 +17,23 @@
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/cards">
-                <Icon name="icon-park-outline:setting-config" /> จัดการคำศัพท์
+              <NuxtLink to="/practice">
+                <Icon name="material-symbols:play-circle" class="text-lg"/> ทายคำ
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/practice">
-                <Icon name="material-symbols:play-circle" /> ทายคำ
+              <NuxtLink to="/cards">
+                <Icon name="icon-park-outline:setting-config" class="text-lg"/> จัดการคำศัพท์
               </NuxtLink>
             </li>
             <li>
               <nuxt-link to="/stat">
-                <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto" /> สถิติการฝึกฝน
+                <Icon name="material-symbols:bar-chart-4-bars" class="text-lg" /> สถิติการฝึกฝน
               </nuxt-link>
             </li>
             <li>
               <NuxtLink to="/settings">
-                <Icon name="material-symbols:settings-heart-outline" /> ตั้งค่า
+                <Icon name="material-symbols:settings-heart-outline" class="text-lg" /> ตั้งค่า
               </NuxtLink>
             </li>
           </ul>
@@ -47,23 +47,24 @@
       <div class="navbar-end">
         <ul class="hidden lg:menu lg:menu-horizontal px-1">
           <li>
-            <NuxtLink to="/cards">
-              <Icon name="icon-park-outline:setting-config" />จัดการคำศัพท์
+            <NuxtLink to="/practice">
+              <Icon name="material-symbols:play-circle" class="text-lg" />ทายคำ
             </NuxtLink>
           </li>
           <li>
-            <NuxtLink to="/practice">
-              <Icon name="material-symbols:play-circle" />ทายคำ
+            <NuxtLink to="/cards">
+              <Icon name="icon-park-outline:setting-config" class="text-lg"/>จัดการคำศัพท์
             </NuxtLink>
           </li>
+
           <li>
             <nuxt-link to="/stat">
-              <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto" /> สถิติ
+              <Icon name="material-symbols:bar-chart-4-bars" class="text-lg"/> สถิติ
             </nuxt-link>
           </li>
           <li>
             <NuxtLink to="/settings">
-              <Icon name="material-symbols:settings-heart-outline" />ตั้งค่า
+              <Icon name="material-symbols:settings-heart-outline" class="text-lg" />ตั้งค่า
             </NuxtLink>
           </li>
         </ul>

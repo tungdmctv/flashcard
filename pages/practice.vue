@@ -19,39 +19,43 @@
         </div>
         <!-- Mode Toggle -->
         <button class="btn btn-sm" @click="toggleMode">
-          <Icon v-if="!isRandomMode" name="fe:random" />
-          <Icon v-else name="lineicons:sort-amount-asc" /> {{ isRandomMode ? 'A->B' : 'Random' }}
+          <Icon v-if="isRandomMode" name="fe:random" />
+          <Icon v-else name="lineicons:sort-amount-asc" /> {{ !isRandomMode ? 'A->B' : 'Random' }}
         </button>
-        <nuxt-link to="/stat">
+        <div @click="showStatsModal = true">
           <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto mb-1" />
-        </nuxt-link>
+        </div>
         <!-- End Game -->
         <button class="btn btn-error btn-xs" @click="endGame">
           <Icon name="ic:baseline-stop-circle" /> End
         </button>
       </div>
     </div>
-
     <!-- Score Display -->
 
-    <div class="w-full flex items-center justify-center">
-      <div class="stats shadow mb-6 w-full lg:w-1/2">
+    <div class="w-full flex flex-col items-center justify-center">
+
+      <div class="stats shadow mb-2 w-full lg:w-1/2">
         <div class="stat">
-          <div class="stat-title">Played</div>
-          <div class="stat-value">{{ answeredCount }}</div>
+          <div class="stat-title">เล่น</div>
+          <div class="stat-value">{{ wordStatsSummary.totalPlayed }}</div>
         </div>
         <div class="stat">
-          <div class="stat-title">OK</div>
-          <div class="stat-value text-success">{{ correctCount }}</div>
+          <div class="stat-title">ถูก</div>
+          <div class="stat-value text-success">{{ wordStatsSummary.totalCorrect }}</div>
         </div>
         <div class="stat">
-          <div class="stat-title">Wrong</div>
-          <div class="stat-value text-error">{{ incorrectCount }}</div>
+          <div class="stat-title">ผิด</div>
+          <div class="stat-value text-error">{{ wordStatsSummary.totalIncorrect }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">อัตราความสำเร็จ</div>
+          <div class="stat-value">{{ wordStatsSummary.avgSuccessRate }}%</div>
         </div>
       </div>
-    </div>
 
-    <div class="w-full flex justify-end pb-4">
+    </div>
+    <div class="w-full flex justify-end items-center pb-4">
       <!-- History Navigation -->
       <div class="flex items-center gap-2 ml-4">
         <button class="btn btn-sm btn-outline" :disabled="sessionHistory.length === 0" @click="navigateHistory(-1)">
@@ -112,6 +116,40 @@
         </div>
       </div>
     </div>
+
+    <!-- Statistics Modal -->
+    <dialog id="stats_modal" class="modal" :class="{ 'modal-open': showStatsModal }">
+      <div class="modal-box w-full">
+        <h3 class="w-full flex justify-center items-center font-bold text-lg mb-4">Overall Statistics</h3>
+        <div class="w-2/3 mx-center stats stats-vertical shadow">
+          <div class="stat">
+            <div class="stat-title">Total Plays</div>
+            <div class="stat-value">{{ answeredCount }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Correct</div>
+            <div class="stat-value text-success">{{ correctCount }}</div>
+            <div class="stat-desc">{{ successRate }}% </div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Incorrect</div>
+            <div class="stat-value text-error">{{ incorrectCount }}</div>
+            <div class="stat-desc">{{ 100 - successRate }}%</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Success Rate</div>
+            <div class="stat-value">{{ successRate }}%</div>
+            <div class="stat-desc">Overall success rate</div>
+          </div>
+        </div>
+        <div class="modal-action">
+          <nuxt-link to="/stat" class="btn btn-secondary">
+            <Icon name="material-symbols:bar-chart-4-bars" /> Stats
+          </nuxt-link>
+          <button class="btn" @click="showStatsModal = false">Close</button>
+        </div>
+      </div>
+    </dialog>
     <AddEdit id="edit-modal" :card="editingCard" />
   </div>
 </template>
@@ -129,6 +167,20 @@ interface Card {
   stats?: { correct: number; incorrect: number; lastSeen?: number }
 }
 
+interface SessionStats {
+  played: number
+  correct: number
+  incorrect: number
+  successRate: number
+}
+
+interface WordStats {
+  played: number
+  correct: number
+  incorrect: number
+  successRate: number
+}
+
 const db = new PouchDB<Card>('flashcards')
 const languages = ref(pronunciationLanguageData.languages);
 const selectLangToSpeak = ref('th-TH');
@@ -144,10 +196,12 @@ const sessionHistory = ref<string[]>([])
 const historyIndex = ref(0)
 const showAlert = ref(false)
 const alertMessage = ref('')
-const editingCard = ref<Card | null>(null)
+const showStatsModal = ref(false)
+const editingCard = ref<Card | undefined>(undefined)
 const showAddModal = ref(false)
 const isLoadingAI = ref(false)
 const cardForm = ref({ word: '', meaning: '', tagsInput: '' })
+const wordStats = ref<Record<string, WordStats>>({})
 
 // Computed Stats
 const correctCount = computed(() =>
@@ -157,6 +211,22 @@ const incorrectCount = computed(() =>
   cards.value.reduce((sum, card) => sum + (card.stats?.incorrect || 0), 0)
 )
 const answeredCount = computed(() => correctCount.value + incorrectCount.value)
+const successRate = computed(() => {
+  const total = answeredCount.value
+  return total > 0 ? Math.round((correctCount.value / total) * 100) : 0
+})
+
+const wordStatsSummary = computed(() => {
+  const stats = Object.values(wordStats.value)
+  return {
+    totalPlayed: stats.reduce((sum, s) => sum + s.played, 0),
+    totalCorrect: stats.reduce((sum, s) => sum + s.correct, 0),
+    totalIncorrect: stats.reduce((sum, s) => sum + s.incorrect, 0),
+    avgSuccessRate: stats.length > 0
+      ? Math.round(stats.reduce((sum, s) => sum + s.successRate, 0) / stats.length)
+      : 0
+  }
+})
 
 // Computed Quiz
 const allTags = computed(() => [...new Set(cards.value.flatMap(c => c.tags))])
@@ -231,20 +301,76 @@ async function handleAnswer(correct: boolean) {
   if (currentCard.value._id && !sessionHistory.value.includes(currentCard.value._id)) {
     sessionHistory.value.push(currentCard.value._id)
   }
+  // Update word stats
+  const wordId = currentCard.value?._id || '';
+  if (!wordStats.value[wordId]) {
+    wordStats.value[wordId] = {
+      played: 0,
+      correct: 0,
+      incorrect: 0,
+      successRate: 0
+    };
+  }
+
+  wordStats.value[wordId].played++;
+  if (correct) {
+    wordStats.value[wordId].correct++;
+  } else {
+    wordStats.value[wordId].incorrect++;
+  }
+  wordStats.value[wordId].successRate = wordStats.value[wordId].played > 0
+    ? Math.round((wordStats.value[wordId].correct / wordStats.value[wordId].played) * 100)
+    : 0;
   isRevealed.value = false
   next()
 }
 
 function next() {
+  if (isRandomMode.value) {
+    if (Math.random() < 0.75) {
+      console.log("shuffle");
+      shuffle();
+    } else {
+      console.log("getLowestSuccessRateWords");
+      getLowestSuccessRateWords();
+    }
+  }
+
   if (currentIndex.value < filteredCards.value.length - 1) {
     currentIndex.value++
-  } else if (isRandomMode.value) {
-    shuffle();
   } else {
     currentIndex.value = 0
   }
+
   isRevealed.value = false
   historyIndex.value = -1
+}
+
+
+function getLowestSuccessRateWords(limit = 5) {
+  const lowestWords = Object.entries(wordStats.value)
+    .filter(([_, stats]) => stats.played > 0 && stats.successRate < 80)
+    .sort((a, b) => a[1].successRate - b[1].successRate)
+    .slice(0, limit)
+    .map(([wordId, stats]) => ({
+      wordId,
+      word: cards.value.find(c => c._id === wordId)?.word || wordId,
+      successRate: stats.successRate
+    }));
+
+  if (lowestWords.length > 0) {
+    const newWord = lowestWords[0];
+    const cardToInsert = cards.value.find(c => c._id === newWord.wordId);
+    if (cardToInsert) {
+      const updatedCards = filteredCards.value
+        .filter(card => card._id !== newWord.wordId)
+        .toSpliced(currentIndex.value, 0, cardToInsert);
+      // Create new array reference to trigger reactivity
+      filteredCards.value = [...updatedCards];
+    }
+  }
+  console.log("lowestWords", lowestWords);
+  return lowestWords;
 }
 
 
@@ -274,6 +400,7 @@ function restartGame() {
   isRevealed.value = false
   sessionHistory.value = []
   historyIndex.value = -1
+  // Keep word stats for reference
   isRandomMode.value ? shuffle() : (currentIndex.value = 0)
 }
 
@@ -319,7 +446,7 @@ function openEditModal(card?: Card) {
     editingCard.value = card
     cardForm.value = { word: card.word, meaning: card.meaning, tagsInput: card.tags.join(', ') }
   } else {
-    editingCard.value = null
+    editingCard.value = undefined
     cardForm.value = { word: '', meaning: '', tagsInput: '' }
   }
   setTimeout(() => {

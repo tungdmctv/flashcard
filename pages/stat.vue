@@ -1,45 +1,66 @@
 <template>
-  <div class="p-4">
+  <div class="p-0 w-full ">
     <h1 class="text-2xl font-bold mb-6">สถิติการฝึกฝน</h1>
 
-
-    <div class="flex justify-between items-center mb-6">
-
-      <div class="stats shadow">
-        <div class="stat">
-          <div class="stat-title">คำศัพท์ทั้งหมด</div>
-          <div class="stat-value">{{ stats.length }}</div>
-        </div>
-        <div class="stat">
-          <div class="stat-title">ถูกทั้งหมด</div>
-          <div class="stat-value">{{ totalCorrect }}</div>
-        </div>
-        <div class="stat">
-          <div class="stat-title">ผิดทั้งหมด</div>
-          <div class="stat-value">{{ totalWrong }}</div>
-        </div>
+    <!-- Search & Filter -->
+    <div class="flex justify-center items-center gap-1 mb-6 ">
+      <input v-model="searchQuery" type="text" placeholder="ค้นหาคำศัพท์..."
+        class="input input-bordered w-1/2" />
+      <div class="dropdown">
+        <label tabindex="0" class="btn m-1"><Icon name="material-symbols:label-outline" class="mr-1" /> Tags</label>
+        <ul tabindex="0"
+          class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[1] max-h-96 overflow-y-auto">
+          <li v-for="tag in allTags.filter(t => t)" :key="tag">
+            <label class="cursor-pointer flex gap-2">
+              <input v-model="selectedTags" :value="tag" type="checkbox" class="checkbox" />
+              <span>{{ tag }}</span>
+            </label>
+          </li>
+        </ul>
       </div>
     </div>
 
-    <div class="flex justify-center my-4">
-        <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1"
-            class="px-4 py-2 mx-1 rounded border border-gray-300 bg-transparent hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-            Previous
-          </button>
-        <span class="px-4 py-2">
-          Page {{ currentPage }} of {{ totalPages }}
-        </span>
-        <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages"
-            class="px-4 py-2 mx-1 rounded border border-gray-300 bg-transparent hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2">
-            Next
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-            </svg>
-          </button>
+
+    <div class="flex w-full justify-between items-center mb-6 gap-1 ">
+      <div class="stats shadow  w-full p-0">
+        <div class="stat">
+          <div class="stat-title">คำ</div>
+          <div class="stat-value">{{ stats.length }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">ถูก</div>
+          <div class="stat-value text-success">{{ totalCorrect }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">ผิด</div>
+          <div class="stat-value text-error">{{ totalWrong }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">สำเร็จ</div>
+          <div 
+            class="stat-value" 
+            :style="{ color: getSuccessRateColor(overallSuccessRate) }"
+          >
+            {{ overallSuccessRate }}%
+          </div>
+        </div>
       </div>
+
+    </div>
+
+    <div class="flex text-sm justify-center my-4">
+      <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1"
+        class="btn btn-outline btn-sm">
+        <Icon name="material-symbols:arrow-back-ios" class="inline-block" />
+      </button>
+      <span class="px-4 py-2">
+        {{ currentPage }} of {{ totalPages }}
+      </span>
+      <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages"
+        class="btn btn-outline btn-sm">
+        <Icon name="material-symbols:arrow-forward-ios" class="inline-block" />
+      </button>
+    </div>
 
     <div class="overflow-x-auto">
       <table class="table mx-auto table-xl w-full">
@@ -78,31 +99,26 @@
             <td>{{ item.stats?.incorrect || 0 }}</td>
             <td>
               <div class="flex items-center gap-2">
-                <progress class="progress progress-primary w-32" :value="getSuccessRate(item)" max="100"></progress>
-                <span>{{ getSuccessRate(item) }}%</span>
+                <span :style="'color: hsl(' + (getSuccessRate(item) * 1.2) + ', 100%, 50%)'">
+                  {{ getSuccessRate(item) }}%
+                </span>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
-      <div class="flex justify-center my-4">
+      <div class="flex text-sm justify-center my-4">
         <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1"
-            class="px-4 py-2 mx-1 rounded border border-gray-300 bg-transparent hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-            Previous
-          </button>
+          class="btn btn-outline btn-sm">
+          <Icon name="material-symbols:arrow-back-ios" class="inline-block" />
+        </button>
         <span class="px-4 py-2">
-          Page {{ currentPage }} of {{ totalPages }}
+          {{ currentPage }} of {{ totalPages }}
         </span>
         <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages"
-            class="px-4 py-2 mx-1 rounded border border-gray-300 bg-transparent hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2">
-            Next
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-            </svg>
-          </button>
+          class="btn btn-outline btn-sm">
+          <Icon name="material-symbols:arrow-forward-ios" class="inline-block" />
+        </button>
       </div>
     </div>
     <!-- Reset Stats -->
@@ -155,6 +171,10 @@
 import { ref, computed, onMounted } from 'vue'
 import pronunciationLanguageData from '~/src/pronunciationLanguage.json'
 const languages = ref(pronunciationLanguageData.languages)
+
+const searchQuery = ref('')
+const selectedTags = ref<string[]>([])
+const allTags = computed(() => Array.from(new Set(stats.value.flatMap(c => c.tags))))
 import PouchDB from 'pouchdb'
 
 const currentPage = ref(1);
@@ -173,8 +193,15 @@ interface Card {
 
 const db = new PouchDB<Card>('flashcards')
 const stats = ref<Card[]>([])
-const sortField = ref<'word' | 'correct' | 'incorrect' | 'successRate'>('correct')
+const sortField = ref<'word' | 'correct' | 'incorrect' | 'successRate'>('successRate')
 const sortDirection = ref<'asc' | 'desc'>('desc')
+function getSuccessRateColor(rate: number) {
+  if (rate >= 80) return '#22c55e' // green-500
+  if (rate >= 60) return '#eab308' // yellow-500
+  if (rate >= 40) return '#f97316' // orange-500
+  return '#ef4444' // red-500
+}
+
 const showModal = ref(false)
 function toggleSort(field: 'word' | 'correct' | 'incorrect' | 'successRate') {
   if (sortField.value === field) {
@@ -193,42 +220,57 @@ const totalWrong = computed(() =>
   stats.value.reduce((sum, card) => sum + (card.stats?.incorrect || 0), 0)
 )
 
-const sortedStats = computed(() => {
-  return [...stats.value].sort((a, b) => {
-    const aCorrect = a.stats?.correct || 0
-    const bCorrect = b.stats?.correct || 0
-    const aWrong = a.stats?.incorrect || 0
-    const bWrong = b.stats?.incorrect || 0
-
-    let comparison = 0
-
-    switch (sortField.value) {
-      case 'word':
-        comparison = a.word.localeCompare(b.word)
-        break
-      case 'correct':
-        comparison = aCorrect - bCorrect
-        break
-      case 'incorrect':
-        comparison = aWrong - bWrong
-        break
-      case 'successRate':
-        comparison = getSuccessRate(a) - getSuccessRate(b)
-        break
-    }
-
-    return sortDirection.value === 'asc' ? comparison : -comparison
-  })
+const overallSuccessRate = computed(() => {
+  const total = totalCorrect.value + totalWrong.value
+  if (total === 0) return 0
+  const rate = (totalCorrect.value / total) * 100
+  return Math.round(rate)
 })
+
+const filteredStats = computed(() =>
+  stats.value
+    .filter(card => {
+      const matchSearch = searchQuery.value
+        ? (card.word && card.word.toLowerCase().includes(searchQuery.value.toLowerCase()))
+        : true
+      const matchTags = !selectedTags.value.length || (card.tags && selectedTags.value.every(t => card.tags.includes(t)))
+      return matchSearch && matchTags && card.word
+    })
+    .sort((a, b) => {
+      const aCorrect = a.stats?.correct || 0
+      const bCorrect = b.stats?.correct || 0
+      const aWrong = a.stats?.incorrect || 0
+      const bWrong = b.stats?.incorrect || 0
+
+      let comparison = 0
+
+      switch (sortField.value) {
+        case 'word':
+          comparison = a.word.localeCompare(b.word)
+          break
+        case 'correct':
+          comparison = aCorrect - bCorrect
+          break
+        case 'incorrect':
+          comparison = aWrong - bWrong
+          break
+        case 'successRate':
+          comparison = getSuccessRate(a) - getSuccessRate(b)
+          break
+      }
+
+      return sortDirection.value === 'asc' ? comparison : -comparison
+    })
+)
 
 const paginatedStats = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
-  return sortedStats.value.slice(start, end);
+  return filteredStats.value.slice(start, end);
 });
 
 const totalPages = computed(() => {
-  return Math.ceil(sortedStats.value.length / itemsPerPage);
+  return Math.ceil(filteredStats.value.length / itemsPerPage);
 });
 
 function getSuccessRate(card: Card) {

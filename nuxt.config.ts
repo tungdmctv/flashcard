@@ -24,10 +24,12 @@ export default defineNuxtConfig({
   },
   pwa: {
     devOptions: {
-      enabled: false   // ← เปิด SW ใน pnpm dev
+      enabled: true,   // ← เปิด SW ใน pnpm dev
+      suppressWarnings: true
     },
     registerType: 'autoUpdate',
     manifest: {
+      override: true,
       name: 'My Flash Card',
       short_name: 'FlashCard',
       start_url: '/flashcard/',
