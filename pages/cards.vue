@@ -183,7 +183,10 @@ const filteredCards = computed(() =>
   })
 
 // ----- MODAL HELPERS -----
-function openAddModal() { openEditModal() }
+function openAddModal() {
+  editingCard.value = {};
+  openEditModal();
+}
 function openEditModal(card?: Card) {
   if (card) {
     editingCard.value = card

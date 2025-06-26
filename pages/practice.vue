@@ -364,7 +364,7 @@ function getLowestSuccessRateWords(limit = 5) {
     if (cardToInsert) {
       const updatedCards = filteredCards.value
         .filter(card => card._id !== newWord.wordId)
-        .toSpliced(currentIndex.value, 0, cardToInsert);
+        .toSpliced(currentIndex.value + 1, 0, cardToInsert);
       // Create new array reference to trigger reactivity
       filteredCards.value = [...updatedCards];
     }
