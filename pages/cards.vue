@@ -184,7 +184,14 @@ const filteredCards = computed(() =>
 
 // ----- MODAL HELPERS -----
 function openAddModal() {
-  editingCard.value = {};
+  editingCard.value = {
+    _id: undefined,
+    word: '',
+    meaning: '',
+    tags: [],
+    createdAt: 0,
+    updatedAt: 0,
+  };
   openEditModal();
 }
 function openEditModal(card?: Card) {
@@ -192,7 +199,9 @@ function openEditModal(card?: Card) {
     editingCard.value = card
     cardForm.value = { word: card.word, meaning: card.meaning, tagsInput: card.tags.join(', ') }
   } else {
-    editingCard.value = null
+    setTimeout(() => {
+      editingCard.value = null
+    }, 50);
     cardForm.value = { word: '', meaning: '', tagsInput: '' }
   }
   showAddModal.value = true;
