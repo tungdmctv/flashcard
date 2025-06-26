@@ -24,6 +24,13 @@
       </div>
     </div>
 
+    <div class="dropdown mx-auto w-full  md:w-1/2 flex space-x-2 justify-center items-center">
+      <div class="hidden md:block">อ่านภาษา : </div>
+      <select v-model="selectLangToSpeak" class="select select-bordered ">
+        <option v-for="lang in languages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
+      </select>
+    </div>
+
     <!-- Pagination -->
     <div class="flex justify-center my-8">
       <div class="btn-group">
@@ -36,8 +43,15 @@
     <!-- Card List -->
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <div v-for="card in paginatedCards" :key="card._id" class="card bg-base-200">
-        <div class="card-body">
-          <h2 class="card-title">{{ card.word }}</h2>
+        <div class="card-body relative">
+          <button class="btn btn-circle btn-lg btn-ghost absolute top-2 right-2" @click="speakWord(card.word)"
+            title="อ่านออกเสียง">
+            <Icon name="material-symbols:volume-up" />
+          </button>
+          <div class="flex justify-between items-start">
+            <h2 class="card-title">{{ card.word }}</h2>
+
+          </div>
           <p>{{ card.meaning }}</p>
           <div class="flex flex-wrap gap-2 mt-2">
             <span v-for="tag in card.tags" :key="tag" class="badge badge-primary">{{ tag }}</span>
@@ -59,53 +73,7 @@
       </div>
     </div>
 
-    <!-- Add / Edit Modal -->
-    <div class="modal" :class="{ 'modal-open': showAddModal }">
-      <div class="modal-box relative max-w-2xl">
-        <button class="btn btn-sm btn-circle absolute right-2 top-2" @click="closeAddModal">✕</button>
-        <h3 class="text-xl font-bold mb-6">{{ editingCard ? 'แก้ไขคำศัพท์' : 'เพิ่มคำศัพท์' }}</h3>
-
-        <form @submit.prevent="saveCard" class="space-y-6">
-          <!-- Word -->
-          <div class="form-control">
-            <label class="label"><span class="label-text font-medium">คำศัพท์</span></label>
-            <input v-model="cardForm.word" type="text" required class="input input-bordered input-lg w-full" />
-          </div>
-
-          <!-- Meaning + AI -->
-          <div class="form-control">
-            <label class="label flex justify-between items-center">
-              <span class="label-text font-medium">ความหมาย</span>
-              <button type="button" class="btn btn-sm btn-outline" :disabled="!cardForm.word || isLoadingAI"
-                @click="getMeaningFromAI">
-                <Icon v-if="!isLoadingAI" name="material-symbols:magic-button" />
-                <Icon v-else name="svg-spinners:pulse-rings-3" />
-                {{ isLoadingAI ? 'กำลังโหลด...' : 'ขอความหมายจาก AI' }}
-              </button>
-            </label>
-            <textarea v-model="cardForm.meaning" required
-              class="textarea textarea-bordered textarea-lg w-full h-48 resize-none"></textarea>
-          </div>
-
-          <!-- Tags -->
-          <div class="form-control">
-            <label class="label"><span class="label-text font-medium">แท็ก (คั่นด้วย ,)</span></label>
-            <input v-model="cardForm.tagsInput" type="text" placeholder="tag1, tag2"
-              class="input input-bordered input-lg w-full" />
-          </div>
-
-          <div class="modal-action mt-2">
-            <button type="submit" class="btn btn-primary">
-              <Icon name="ri:save-3-line" /> บันทึก
-            </button>
-            <button type="button" class="btn" @click="closeAddModal">
-              <Icon name="bitcoin-icons:cross-filled" /> ยกเลิก
-            </button>
-          </div>
-        </form>
-      </div>
-      <div class="modal-backdrop" @click="closeAddModal"></div>
-    </div>
+    <AddEdit id="edit-modal" :card="editingCard" @saveCard="loadCards" />
 
     <!-- Delete Confirmation Modal -->
     <div class="modal" :class="{ 'modal-open': showDeleteModal }">
@@ -130,6 +98,7 @@
 import { ref, computed, onMounted } from 'vue'
 import PouchDB from 'pouchdb'
 import { useOpenAI } from '~/composables/useOpenAI'
+import pronunciationLanguageData from '~/src/pronunciationLanguage.json'
 
 interface Card {
   _id?: string
@@ -140,20 +109,52 @@ interface Card {
   updatedAt: number
 }
 
+const settings = ref<{ pronunciationLanguage: string }>({ pronunciationLanguage: 'th-TH' });
+
+async function loadSettings() {
+  try {
+    const doc = await db.get<{ pronunciationLanguage: string }>('app_settings');
+    settings.value = { pronunciationLanguage: doc.pronunciationLanguage || 'th-TH' }
+    selectLangToSpeak.value = doc.pronunciationLanguage || 'th-TH'
+  } catch (err) {
+    console.error('Failed to load settings:', err)
+  }
+}
+
+// Text-to-Speech
+function speakWord(text: string) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
+
+  const utterance = new SpeechSynthesisUtterance(text || '')
+  const langMap: Record<string, string> = { th: 'th-TH', en: 'en-US', zh: 'zh-CN' }
+  utterance.lang = langMap[selectLangToSpeak.value] ?? 'en-US'
+
+  const voices = window.speechSynthesis.getVoices()
+  const voice = voices.find(v => v.lang === utterance.lang) ||
+    voices.find(v => v.lang.startsWith(utterance.lang.slice(0, 2)))
+  if (voice) utterance.voice = voice
+
+  window.speechSynthesis.cancel() // stop any ongoing speech
+  window.speechSynthesis.speak(utterance)
+}
+
+
 const db = new PouchDB<Card>('flashcards')
+const languages = ref(pronunciationLanguageData.languages)
+const selectLangToSpeak = ref('th-TH')
 
 // ----- STATE -----
 const cards = ref<Card[]>([])
 const searchQuery = ref('')
 const selectedTags = ref<string[]>([])
-const editingCard = ref<Card | null>(null)
-const cardToDelete = ref<Card | null>(null)
+const editingCard = ref<Card | undefined>()
+const cardToDelete = ref<Card | undefined>()
 const showAddModal = ref(false)
 const showDeleteModal = ref(false)
 const isLoadingAI = ref(false)
 const cardForm = ref({ word: '', meaning: '', tagsInput: '' })
 const currentPage = ref(1)
-const itemsPerPage = 10
+const itemsPerPage = 12
 
 const { getMeaning } = useOpenAI()
 
@@ -191,18 +192,18 @@ function openEditModal(card?: Card) {
     editingCard.value = null
     cardForm.value = { word: '', meaning: '', tagsInput: '' }
   }
-  showAddModal.value = true
+  showAddModal.value = true;
+  setTimeout(() => {
+    openModal("edit-modal")
+  }, 40);
 }
-function closeAddModal() {
-  showAddModal.value = false
-  editingCard.value = null
-}
+
 
 function showDeleteConfirm(card: Card) {
   cardToDelete.value = card
   showDeleteModal.value = true
 }
-function cancelDelete() { showDeleteModal.value = false; cardToDelete.value = null }
+function cancelDelete() { showDeleteModal.value = false; cardToDelete.value = undefined }
 
 // ----- CRUD -----
 async function loadCards() {
@@ -210,41 +211,7 @@ async function loadCards() {
   cards.value = res.rows.map(r => r.doc as Card)
 }
 
-async function saveCard() {
-  // trim และตรวจสอบว่ากรอกครบ
-  const word = cardForm.value.word.trim()
-  const meaning = cardForm.value.meaning.trim()
-  if (!word || !meaning) return
 
-  // ตรวจคำซ้ำ (case‑insensitive) ถ้าเป็นการเพิ่มใหม่หรือเปลี่ยนคำ
-  const duplicate = cards.value.find(c => c?.word?.toLowerCase() === word?.toLowerCase() && c._id !== editingCard.value?._id)
-  if (duplicate) {
-    alert(`มีคำ "${word}" อยู่แล้วในรายการ`)
-    return
-  }
-
-  // จัดการแท็ก
-  const tags = cardForm.value.tagsInput.split(',').map(t => t.trim()).filter(Boolean)
-  const now = Date.now()
-  const card: Card = {
-    word,
-    meaning,
-    tags,
-    createdAt: editingCard.value?.createdAt || now,
-    updatedAt: now
-  }
-
-  // save
-  if (editingCard.value?._id) {
-    const doc = await db.get(editingCard.value._id)
-    await db.put({ ...card, _id: editingCard.value._id, _rev: doc._rev })
-  } else {
-    await db.post(card)
-  }
-
-  closeAddModal()
-  loadCards()
-}
 
 async function confirmDelete() {
   if (!cardToDelete.value?._id) return
@@ -255,14 +222,13 @@ async function confirmDelete() {
   loadCards()
 }
 
-// ----- AI -----
-async function getMeaningFromAI() {
-  if (!cardForm.value.word || isLoadingAI.value) return
-  isLoadingAI.value = true
-  try { cardForm.value.meaning = await getMeaning(cardForm.value.word) }
-  catch (e) { console.error(e) }
-  finally { isLoadingAI.value = false }
+function openModal(id = "") {
+  const modal = document.getElementById(id)
+  modal?.classList.add('modal-open');
 }
 
-onMounted(loadCards)
+onMounted(() => {
+  loadSettings();
+  loadCards();
+})
 </script>

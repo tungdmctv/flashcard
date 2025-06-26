@@ -44,6 +44,7 @@
                     <input v-model="cardForm.tagsInput" type="text" placeholder="tag1, tag2"
                         class="input input-bordered input-lg w-full" />
                 </div>
+
                 <div class="flex flex-wrap gap-2 mb-4">
                     <span v-for="tag in allTags" :key="tag" class="badge badge-lg cursor-pointer"
                         :class="{ 'badge-primary': cardForm.tagsInput.includes(tag) }" @click="toggleTag(tag)">
