@@ -4,6 +4,7 @@
 .nuxt
 .nitro
 .cache
+.trae
 dist
 AI.md
 # Node dependencies
