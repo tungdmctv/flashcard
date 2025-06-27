@@ -231,20 +231,22 @@ const wordStatsSummary = computed(() => {
   }
 })
 
-// Computed Quiz
-const allTags = computed(() => [...new Set(allCards.value.flatMap(c => c.tags))])
-const filteredCards = computed(() =>
-  allCards.value.filter(c =>
-    selectedTags.value.length === 0 || selectedTags.value.some(t => c.tags.includes(t))
-  )
-)
-const currentCard = computed(() => filteredCards.value[currentIndex.value] || null)
-
 // Format meaning with <br>
 const formattedMeaning = computed(() => {
   return currentCard.value?.meaning
     .replace(/\n/g, '<br>') || ''
 })
+
+// Computed Quiz
+const allTags = computed(() => [...new Set(allCards.value.flatMap(c => c.tags))])
+const filteredCards = computed(() => {
+  return cards.value.filter(c =>
+    selectedTags.value.length === 0 || selectedTags.value.some(t => c.tags.includes(t))
+  )
+}
+)
+const currentCard = computed(() => filteredCards.value[currentIndex.value] || null)
+
 
 // Methods
 const allCards = ref<Card[]>([])
@@ -264,24 +266,9 @@ async function loadCards() {
     }
   }))
   allCards.value = [...cards.value]
-  if (isRandomMode.value) shuffle()
-}
-
-function shuffle() {
-  currentIndex.value = 0
-  isRevealed.value = false
-  cards.value = [...filteredCards.value].sort(() => Math.random() - 0.5)
-}
-
-function toggleMode() {
-  isRandomMode.value = !isRandomMode.value
-  isRevealed.value = false
-  isRandomMode.value ? shuffle() : (currentIndex.value = 0)
-}
-
-function toggleReveal() {
-  if (!isRevealed.value) {
-    isRevealed.value = true
+  if (isRandomMode.value) {
+    console.log("shuffle loadCards");
+    shuffle()
   }
 }
 
@@ -330,17 +317,33 @@ async function handleAnswer(correct: boolean) {
   next()
 }
 
+
+function shuffle() {
+    currentIndex.value = 0
+    isRevealed.value = false
+    const array = [...filteredCards.value];
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    // filteredCards.value = [...array];
+    cards.value = [...array];
+}
+
+
 function next() {
+  console.log("next card");
   if (isRandomMode.value) {
-    if (Math.random() < 0.75) {
-      console.log("shuffle");
-      shuffle();
-    } else {
-      console.log("getLowestSuccessRateWords");
+    console.log("next isRandomMode");
+    shuffle();
+    if (Math.random() > 0.75) {
+      console.log("next getLowestSuccessRateWords");
       getLowestSuccessRateWords();
     }
   } else {
+    console.log("next Not Random");
     if (Math.random() >= 0.75) {
+      console.log("next Not Random : getLowestSuccessRateWords");
       getLowestSuccessRateWords();
     }
   }
@@ -373,7 +376,7 @@ function getLowestSuccessRateWords(limit = 1) {
     if (cardToInsert) {
       const updatedCards = filteredCards.value
         .filter(card => card._id !== newWord.wordId)
-        .toSpliced(currentIndex.value + 1, 0, cardToInsert);
+        .toSpliced(currentIndex.value, 0, cardToInsert);
       // Create new array reference to trigger reactivity
       filteredCards.value = [...updatedCards];
     }
@@ -398,6 +401,19 @@ function speak(lang: string) {
 
   window.speechSynthesis.cancel() // stop any ongoing speech
   window.speechSynthesis.speak(utterance)
+}
+
+
+function toggleMode() {
+  isRandomMode.value = !isRandomMode.value
+  isRevealed.value = false
+  isRandomMode.value ? shuffle() : (currentIndex.value = 0)
+}
+
+function toggleReveal() {
+  if (!isRevealed.value) {
+    isRevealed.value = true
+  }
 }
 
 function endGame() {

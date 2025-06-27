@@ -29,6 +29,7 @@ export default defineNuxtConfig({
     },
     registerType: 'autoUpdate',
     manifest: {
+      override: true,
       name: 'My Flash Card',
       short_name: 'FlashCard',
       start_url: '/flashcard/',
