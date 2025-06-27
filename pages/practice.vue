@@ -81,6 +81,9 @@
           <button class="btn btn-error" @click.stop="handleAnswer(false)">Again</button>
         </div>
       </div>
+      <div class="flex flex-wrap justify-start items-center gap-2 mt-2 text-gray-300">
+        <span v-for="tag in currentCard.tags" :key="tag" class="badge badge-sm ">{{ tag }}</span>
+      </div>
     </div>
     <div v-else-if="!isGameOver" class="text-center py-12">
       <p class="text-xl mb-4">No Words Selected</p>
@@ -229,9 +232,9 @@ const wordStatsSummary = computed(() => {
 })
 
 // Computed Quiz
-const allTags = computed(() => [...new Set(cards.value.flatMap(c => c.tags))])
+const allTags = computed(() => [...new Set(allCards.value.flatMap(c => c.tags))])
 const filteredCards = computed(() =>
-  cards.value.filter(c =>
+  allCards.value.filter(c =>
     selectedTags.value.length === 0 || selectedTags.value.some(t => c.tags.includes(t))
   )
 )
@@ -244,6 +247,7 @@ const formattedMeaning = computed(() => {
 })
 
 // Methods
+const allCards = ref<Card[]>([])
 async function loadCards() {
   const res = await db.allDocs({ include_docs: true })
   const docs = res.rows
@@ -259,6 +263,7 @@ async function loadCards() {
       lastSeen: doc.stats?.lastSeen || Date.now()
     }
   }))
+  allCards.value = [...cards.value]
   if (isRandomMode.value) shuffle()
 }
 
@@ -334,6 +339,10 @@ function next() {
       console.log("getLowestSuccessRateWords");
       getLowestSuccessRateWords();
     }
+  } else {
+    if (Math.random() >= 0.75) {
+      getLowestSuccessRateWords();
+    }
   }
 
   if (currentIndex.value < filteredCards.value.length - 1) {
@@ -347,7 +356,7 @@ function next() {
 }
 
 
-function getLowestSuccessRateWords(limit = 5) {
+function getLowestSuccessRateWords(limit = 1) {
   const lowestWords = Object.entries(wordStats.value)
     .filter(([_, stats]) => stats.played > 0 && stats.successRate < 80)
     .sort((a, b) => a[1].successRate - b[1].successRate)
