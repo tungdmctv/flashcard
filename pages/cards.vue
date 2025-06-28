@@ -49,7 +49,7 @@
             <Icon name="material-symbols:volume-up" />
           </button>
           <div class="flex justify-between items-start">
-            <h2 class="card-title">{{ card.word }}</h2>
+            <h2 class="text-5xl">{{ card.word }}</h2>
 
           </div>
           <p>{{ card.meaning }}</p>

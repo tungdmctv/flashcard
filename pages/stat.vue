@@ -94,7 +94,7 @@
         </thead>
         <tbody>
           <tr v-for="item in paginatedStats.filter(w => w.word)" :key="item._id">
-            <td @click="openPopup(item)" class="cursor-pointer hover:text-blue-500 text-2xl">{{ item.word }}</td>
+            <td @click="openPopup(item)" class="cursor-pointer hover:text-blue-500 text-4xl">{{ item.word }}</td>
             <td>{{ item.stats?.correct || 0 }}</td>
             <td>{{ item.stats?.incorrect || 0 }}</td>
             <td>
