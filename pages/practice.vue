@@ -20,7 +20,8 @@
         <!-- Mode Toggle -->
         <button class="btn btn-sm" @click="toggleMode">
           <Icon v-if="isRandomMode" name="fe:random" />
-          <Icon v-else name="lineicons:sort-amount-asc" /> {{ !isRandomMode ? 'A->B' : 'Random' }}
+          <Icon v-else name="lineicons:sort-amount-asc" />
+          {{ isRandomMode ? 'Random' : 'A->B' }}
         </button>
         <div @click="showStatsModal = true">
           <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto mb-1" />
@@ -74,11 +75,15 @@
       </div>
       <div class="card-body items-center text-center">
         <h2 class="card-title text-6xl mb-4 py-6">{{ currentCard.word }}</h2>
+        <p v-if="showPinyin && currentCard.pinyin" class="text-lg mb-2 opacity-80">พินอิน: {{ currentCard.pinyin }}</p>
         <!-- meaning with line breaks -->
         <p v-show="isRevealed" class="text-xl mb-4" v-html="formattedMeaning"></p>
-        <div v-show="isRevealed" class="flex gap-4">
+        <div v-show="isRevealed && !isHistoryView" class="flex gap-4">
           <button class="btn btn-success" @click.stop="handleAnswer(true)">OK</button>
           <button class="btn btn-error" @click.stop="handleAnswer(false)">Again</button>
+        </div>
+        <div v-if="isRevealed && isHistoryView" class="text-sm opacity-70">
+          คุณทายคำนี้ไปแล้ว (กด Next เพื่อกลับไปเล่นต่อ)
         </div>
       </div>
       <div class="flex flex-wrap justify-start items-center gap-2 mt-2 text-gray-300">
@@ -103,6 +108,9 @@
       <button class="btn" @click.stop="speak(selectLangToSpeak)">
         <Icon name="material-symbols:volume-up" /> อ่านออกเสียง
       </button>
+      <button v-if="currentCard?.pinyin" class="btn btn-outline" @click.stop="showPinyin = !showPinyin">
+        <Icon name="material-symbols:translate" /> {{ showPinyin ? 'ซ่อน Pinyin' : 'แสดง Pinyin' }}
+      </button>
     </div>
 
 
@@ -111,10 +119,11 @@
     <div class="modal">
       <div class="modal-box relative">
         <h3 class="text-lg font-bold mb-4">จบเกมแล้ว 🎉</h3>
-        <p class="mb-2">คำที่ทายไปทั้งหมด: {{ answeredCount }}</p>
-        <p class="mb-2 text-success">จำนวนคำที่ถูกต้อง: {{ correctCount }}</p>
-        <p class="mb-4 text-error">จำนวนคำที่ผิดพลาด: {{ incorrectCount }}</p>
+        <p class="mb-2">คำที่ทายไปทั้งหมด: {{ sessionAnsweredCount }}</p>
+        <p class="mb-2 text-success">จำนวนคำที่ถูกต้อง: {{ sessionCorrectCount }}</p>
+        <p class="mb-4 text-error">จำนวนคำที่ผิดพลาด: {{ sessionIncorrectCount }}</p>
         <div class="modal-action">
+          <button class="btn" @click="closeEndModal">ปิด</button>
           <button class="btn btn-primary" @click="restartGame">เล่นใหม่</button>
         </div>
       </div>
@@ -165,6 +174,7 @@ import pronunciationLanguageData from '~/src/pronunciationLanguage.json'
 interface Card {
   _id?: string
   word: string
+  pinyin?: string
   meaning: string
   tags: string[]
   stats?: { correct: number; incorrect: number; lastSeen?: number }
@@ -196,7 +206,7 @@ const isRandomMode = ref(true)
 const selectedTags = ref<string[]>([])
 const isGameOver = ref(false)
 const sessionHistory = ref<string[]>([])
-const historyIndex = ref(0)
+const historyIndex = ref(-1)
 const showAlert = ref(false)
 const alertMessage = ref('')
 const showStatsModal = ref(false)
@@ -205,6 +215,15 @@ const showAddModal = ref(false)
 const isLoadingAI = ref(false)
 const cardForm = ref({ word: '', meaning: '', tagsInput: '' })
 const wordStats = ref<Record<string, WordStats>>({})
+const displayQueue = ref<Card[]>([])
+const sessionCorrectCount = ref(0)
+const sessionIncorrectCount = ref(0)
+const sessionAnsweredCount = computed(() => sessionCorrectCount.value + sessionIncorrectCount.value)
+const showPinyin = ref(false)
+const isHistoryView = ref(false)
+const resumeCardId = ref<string | null>(null)
+const repeatState = ref<Record<string, { dueIn: number }>>({})
+const forcedQueue = ref<string[]>([])
 
 // Computed Stats
 const correctCount = computed(() =>
@@ -245,7 +264,7 @@ const filteredCards = computed(() => {
   )
 }
 )
-const currentCard = computed(() => filteredCards.value[currentIndex.value] || null)
+const currentCard = computed(() => displayQueue.value[currentIndex.value] || null)
 
 
 // Methods
@@ -266,14 +285,12 @@ async function loadCards() {
     }
   }))
   allCards.value = [...cards.value]
-  if (isRandomMode.value) {
-    console.log("shuffle loadCards");
-    shuffle()
-  }
+  rebuildQueue()
 }
 
 async function handleAnswer(correct: boolean) {
   if (!currentCard.value?._id) return
+  const answeredId = currentCard.value._id
   const doc = await db.get(currentCard.value._id)
   const stats = {
     correct: doc.stats?.correct || 0,
@@ -290,7 +307,7 @@ async function handleAnswer(correct: boolean) {
     currentCard.value.stats.lastSeen = stats.lastSeen
   }
   // Add to session history
-  if (currentCard.value._id && !sessionHistory.value.includes(currentCard.value._id)) {
+  if (currentCard.value._id) {
     sessionHistory.value.push(currentCard.value._id)
   }
   // Update word stats
@@ -306,83 +323,128 @@ async function handleAnswer(correct: boolean) {
 
   wordStats.value[wordId].played++;
   if (correct) {
+    sessionCorrectCount.value++
     wordStats.value[wordId].correct++;
   } else {
+    sessionIncorrectCount.value++
     wordStats.value[wordId].incorrect++;
   }
   wordStats.value[wordId].successRate = wordStats.value[wordId].played > 0
     ? Math.round((wordStats.value[wordId].correct / wordStats.value[wordId].played) * 100)
     : 0;
+
+  updateRepeatState(answeredId, correct)
   isRevealed.value = false
   next()
 }
 
-
-function shuffle() {
-    currentIndex.value = 0
-    isRevealed.value = false
-    const array = [...filteredCards.value];
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    // filteredCards.value = [...array];
-    cards.value = [...array];
+function shuffleArray<T>(array: T[]): T[] {
+  const copy = [...array]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
 }
 
+function pickWeightedRandomIndex(queue: Card[]): number {
+  if (!queue.length) return 0
+
+  const weights = queue.map((card) => {
+    const correct = Number(card.stats?.correct || 0)
+    const incorrect = Number(card.stats?.incorrect || 0)
+    const total = correct + incorrect
+    if (total === 0) return 3
+    const successRate = correct / total
+    return 1 + (1 - successRate) * 3
+  })
+
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0)
+  let random = Math.random() * totalWeight
+  for (let i = 0; i < weights.length; i++) {
+    random -= weights[i]
+    if (random <= 0) return i
+  }
+  return queue.length - 1
+}
+
+function rebuildQueue() {
+  const base = [...filteredCards.value]
+  displayQueue.value = isRandomMode.value ? shuffleArray(base) : base
+  currentIndex.value = displayQueue.value.length ? 0 : -1
+  isRevealed.value = false
+  showPinyin.value = false
+  // Clean queues when filter changes or mode changes
+  const validIds = new Set(displayQueue.value.map(c => c._id).filter(Boolean) as string[])
+  forcedQueue.value = forcedQueue.value.filter(id => validIds.has(id))
+  repeatState.value = Object.fromEntries(
+    Object.entries(repeatState.value).filter(([id]) => validIds.has(id))
+  )
+}
 
 function next() {
-  console.log("next card");
-  if (isRandomMode.value) {
-    console.log("next isRandomMode");
-    shuffle();
-    if (Math.random() > 0.75) {
-      console.log("next getLowestSuccessRateWords");
-      getLowestSuccessRateWords();
-    }
-  } else {
-    console.log("next Not Random");
-    if (Math.random() >= 0.75) {
-      console.log("next Not Random : getLowestSuccessRateWords");
-      getLowestSuccessRateWords();
+  isHistoryView.value = false
+  if (!displayQueue.value.length) {
+    currentIndex.value = -1
+    isRevealed.value = false
+    return
+  }
+
+  const forcedId = forcedQueue.value.shift()
+  if (forcedId) {
+    const forcedIndex = displayQueue.value.findIndex(c => c._id === forcedId)
+    if (forcedIndex >= 0) {
+      currentIndex.value = forcedIndex
+      isRevealed.value = false
+      showPinyin.value = false
+      historyIndex.value = -1
+      return
     }
   }
 
-  if (currentIndex.value < filteredCards.value.length - 1) {
-    currentIndex.value++
+  if (isRandomMode.value) {
+    currentIndex.value = pickWeightedRandomIndex(displayQueue.value)
   } else {
-    currentIndex.value = 0
+    if (currentIndex.value < displayQueue.value.length - 1) {
+      currentIndex.value++
+    } else {
+      currentIndex.value = 0
+    }
   }
 
   isRevealed.value = false
+  showPinyin.value = false
   historyIndex.value = -1
 }
 
+function randomRepeatDelay() {
+  return Math.floor(Math.random() * 8) + 3 // 3..10
+}
 
-function getLowestSuccessRateWords(limit = 1) {
-  const lowestWords = Object.entries(wordStats.value)
-    .filter(([_, stats]) => stats.played > 0 && stats.successRate < 80)
-    .sort((a, b) => a[1].successRate - b[1].successRate)
-    .slice(0, limit)
-    .map(([wordId, stats]) => ({
-      wordId,
-      word: cards.value.find(c => c._id === wordId)?.word || wordId,
-      successRate: stats.successRate
-    }));
+function queueForcedRepeat(cardId: string) {
+  if (!forcedQueue.value.includes(cardId)) {
+    forcedQueue.value.push(cardId)
+  }
+}
 
-  if (lowestWords.length > 0) {
-    const newWord = lowestWords[0];
-    const cardToInsert = cards.value.find(c => c._id === newWord.wordId);
-    if (cardToInsert) {
-      const updatedCards = filteredCards.value
-        .filter(card => card._id !== newWord.wordId)
-        .toSpliced(currentIndex.value, 0, cardToInsert);
-      // Create new array reference to trigger reactivity
-      filteredCards.value = [...updatedCards];
+function updateRepeatState(answeredId: string, correct: boolean) {
+  // Tick all pending repeats except the card just answered
+  for (const [id, state] of Object.entries(repeatState.value)) {
+    if (id === answeredId) continue
+    state.dueIn -= 1
+    if (state.dueIn <= 0) {
+      queueForcedRepeat(id)
+      state.dueIn = randomRepeatDelay()
     }
   }
-  console.log("lowestWords", lowestWords);
-  return lowestWords;
+
+  if (correct) {
+    delete repeatState.value[answeredId]
+    forcedQueue.value = forcedQueue.value.filter(id => id !== answeredId)
+    return
+  }
+
+  repeatState.value[answeredId] = { dueIn: randomRepeatDelay() }
 }
 
 
@@ -406,8 +468,7 @@ function speak(lang: string) {
 
 function toggleMode() {
   isRandomMode.value = !isRandomMode.value
-  isRevealed.value = false
-  isRandomMode.value ? shuffle() : (currentIndex.value = 0)
+  rebuildQueue()
 }
 
 function toggleReveal() {
@@ -425,14 +486,36 @@ function restartGame() {
   isRevealed.value = false
   sessionHistory.value = []
   historyIndex.value = -1
+  sessionCorrectCount.value = 0
+  sessionIncorrectCount.value = 0
+  wordStats.value = {}
+  repeatState.value = {}
+  forcedQueue.value = []
   // Keep word stats for reference
-  isRandomMode.value ? shuffle() : (currentIndex.value = 0)
+  rebuildQueue()
+}
+
+function closeEndModal() {
+  isGameOver.value = false
+  isRevealed.value = false
 }
 
 function navigateHistory(direction: number) {
   if (sessionHistory.value.length === 0) return
+  if (direction > 0 && isHistoryView.value) {
+    resumeFromHistory()
+    return
+  }
 
-  let newIndex = historyIndex.value + direction
+  let newIndex = historyIndex.value
+
+  // First navigation: jump to edge depending on direction
+  if (newIndex === -1) {
+    resumeCardId.value = currentCard.value?._id || null
+    newIndex = direction < 0 ? sessionHistory.value.length - 1 : 0
+  } else {
+    newIndex = newIndex + direction
+  }
 
   // Cycle through history when reaching either end
   if (newIndex < 0) newIndex = sessionHistory.value.length - 1
@@ -442,18 +525,43 @@ function navigateHistory(direction: number) {
 
   if (historyIndex.value >= 0) {
     const cardId = sessionHistory.value[historyIndex.value]
-    const cardIndex = filteredCards.value.findIndex(c => c._id === cardId)
+    const cardIndex = displayQueue.value.findIndex(c => c._id === cardId)
     if (cardIndex >= 0) {
       currentIndex.value = cardIndex
       isRevealed.value = true
+      showPinyin.value = false
+      isHistoryView.value = true
+    } else {
+      const fallbackCard = cards.value.find(c => c._id === cardId)
+      if (fallbackCard) {
+        displayQueue.value = [fallbackCard, ...displayQueue.value]
+        currentIndex.value = 0
+        isRevealed.value = true
+        showPinyin.value = false
+        isHistoryView.value = true
+      }
     }
   }
 }
 
-watch(selectedTags, () => {
-  currentIndex.value = 0
+function resumeFromHistory() {
+  const targetId = resumeCardId.value
+  if (!targetId) {
+    isHistoryView.value = false
+    historyIndex.value = -1
+    isRevealed.value = false
+    return
+  }
+  const idx = displayQueue.value.findIndex(c => c._id === targetId)
+  if (idx >= 0) currentIndex.value = idx
+  isHistoryView.value = false
+  historyIndex.value = -1
   isRevealed.value = false
-  if (isRandomMode.value) shuffle()
+  showPinyin.value = false
+}
+
+watch(selectedTags, () => {
+  rebuildQueue()
 })
 
 async function loadSettings() {

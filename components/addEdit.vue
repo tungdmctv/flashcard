@@ -37,8 +37,13 @@
                         class="textarea textarea-bordered textarea-lg w-full h-48 resize-none"></textarea>
                 </div>
 
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">พินอิน (ถ้ามี)</span></label>
+                    <input v-model="cardForm.pinyin" type="text" placeholder="เช่น tiándiǎn"
+                        class="input input-bordered input-lg w-full" />
+                </div>
+
                 <!-- Tags -->
-               
                 <div class="form-control">
                     <label class="label"><span class="label-text font-medium">แท็ก (คั่นด้วย ,)</span></label>
                     <input v-model="cardForm.tagsInput" type="text" placeholder="tag1, tag2"
@@ -75,6 +80,7 @@ const emit = defineEmits(['saveCard'])
 interface Card {
     _id?: string
     word: string
+    pinyin?: string
     meaning: string
     tags: string[]
     createdAt?: number
@@ -88,12 +94,14 @@ const props = defineProps({
 
 watch(() => props.card, (newVal) => {
     cardForm.value.word = props.card?.word || ''
+    cardForm.value.pinyin = props.card?.pinyin || ''
     cardForm.value.meaning = props.card?.meaning || ''
     cardForm.value.tagsInput = Array.isArray(props.card?.tags) ? props.card.tags.join(', ') : props.card?.tags || ''
 })
 const db = new PouchDB<Card>('flashcards')
-const cardForm = ref<{ word: string; meaning: string; tagsInput: string }>({
+const cardForm = ref<{ word: string; pinyin: string; meaning: string; tagsInput: string }>({
     word: props.card?.word || '',
+    pinyin: props.card?.pinyin || '',
     meaning: props.card?.meaning || '',
     tagsInput: Array.isArray(props.card?.tags) ? props.card.tags.join(', ') : props.card?.tags || ''
 })
@@ -145,6 +153,7 @@ async function loadCards() {
 async function saveCard() {
     // trim และตรวจสอบว่ากรอกครบ
     const word = cardForm.value.word.trim()
+    const pinyin = cardForm.value.pinyin.trim()
     const meaning = cardForm.value.meaning.trim()
     if (!word || !meaning) return
 
@@ -161,6 +170,7 @@ async function saveCard() {
     const now = Date.now()
     const card: Card = {
         word,
+        pinyin: pinyin || undefined,
         meaning,
         tags,
         createdAt: props.card?.createdAt || now,

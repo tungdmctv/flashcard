@@ -52,6 +52,7 @@
             <h2 class="text-5xl">{{ card.word }}</h2>
 
           </div>
+          <p v-if="card.pinyin" class="text-sm opacity-70">พินอิน: {{ card.pinyin }}</p>
           <p>{{ card.meaning }}</p>
           <div class="flex flex-wrap gap-2 mt-2">
             <span v-for="tag in card.tags" :key="tag" class="badge badge-primary">{{ tag }}</span>
@@ -103,6 +104,7 @@ import pronunciationLanguageData from '~/src/pronunciationLanguage.json'
 interface Card {
   _id?: string
   word: string
+  pinyin?: string
   meaning: string
   tags: string[]
   createdAt: number
@@ -187,6 +189,7 @@ function openAddModal() {
   editingCard.value = {
     _id: undefined,
     word: '',
+    pinyin: '',
     meaning: '',
     tags: [],
     createdAt: 0,

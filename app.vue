@@ -12,27 +12,27 @@
           <ul tabindex="0"
             class="menu menu-lg dropdown-content bg-base-200 rounded-box z-1 mt-3 w-52 p-2 shadow bodered border-2 border-gray-300">
             <li>
-              <NuxtLink to="/">
+              <NuxtLink to="/" @click="closeMobileMenu">
                 <Icon name="icon-park-outline:flash-payment" /> My Flash Card
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/practice">
+              <NuxtLink to="/practice" @click="closeMobileMenu">
                 <Icon name="material-symbols:play-circle" class="text-lg"/> ทายคำ
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/cards">
+              <NuxtLink to="/cards" @click="closeMobileMenu">
                 <Icon name="icon-park-outline:setting-config" class="text-lg"/> จัดการคำศัพท์
               </NuxtLink>
             </li>
             <li>
-              <nuxt-link to="/stat">
+              <nuxt-link to="/stat" @click="closeMobileMenu">
                 <Icon name="material-symbols:bar-chart-4-bars" class="text-lg" /> สถิติการฝึกฝน
               </nuxt-link>
             </li>
             <li>
-              <NuxtLink to="/settings">
+              <NuxtLink to="/settings" @click="closeMobileMenu">
                 <Icon name="material-symbols:settings-heart-outline" class="text-lg" /> ตั้งค่า
               </NuxtLink>
             </li>
@@ -77,5 +77,9 @@
 </template>
 
 <script setup lang="ts">
-// Your component logic here
+function closeMobileMenu() {
+  if (typeof document === 'undefined') return
+  const active = document.activeElement as HTMLElement | null
+  active?.blur()
+}
 </script>

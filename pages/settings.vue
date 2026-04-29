@@ -1,5 +1,11 @@
 <template>
   <div class="min-h-screen bg-base-200 p-6">
+    <div v-if="showToast" class="toast toast-top toast-end z-[1000]">
+      <div class="alert alert-info shadow-lg">
+        <span>{{ toastMessage }}</span>
+      </div>
+    </div>
+
     <div class="max-w-2xl mx-auto">
       <h1 class="text-3xl font-semibold mb-8">ตั้งค่า AI</h1>
 
@@ -76,8 +82,33 @@
             <button class="my-1 btn btn-secondary" @click="exportWords"><Icon name="uiw:file-excel" />Export คำเป็น Excel</button>
             <button class="my-1 btn btn-primary" @click="saveSettings"><Icon name="material-symbols:save-outline-sharp" /> บันทึกการตั้งค่า</button>
           </div>
+          <div class="divider my-2">จัดการข้อมูล</div>
+          <div class="flex flex-wrap justify-end gap-3">
+            <button class="btn btn-outline btn-warning" @click="openConfirmModal('clearStats')">
+              <Icon name="radix-icons:reset" /> ลบข้อมูลสถิติทั้งหมด
+            </button>
+            <button class="btn btn-error" @click="openConfirmModal('clearWords')">
+              <Icon name="material-symbols:delete-outline" /> ลบข้อมูลศัพท์ทั้งหมด
+            </button>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div class="modal" :class="{ 'modal-open': showConfirmModal }">
+      <div class="modal-box">
+        <h3 class="text-lg font-bold mb-4">{{ confirmTitle }}</h3>
+        <p>{{ confirmMessage }}</p>
+        <div class="modal-action">
+          <button class="btn btn-error" @click="confirmAndRun">
+            <Icon name="material-symbols:delete-outline" /> ยืนยัน
+          </button>
+          <button class="btn" @click="closeConfirmModal">
+            <Icon name="bitcoin-icons:cross-filled" /> ยกเลิก
+          </button>
+        </div>
+      </div>
+      <div class="modal-backdrop" @click="closeConfirmModal"></div>
     </div>
   </div>
 </template>
@@ -100,9 +131,16 @@ interface Settings {
 
 interface Card {
   _id?: string
+  _rev?: string
   word: string
+  pinyin?: string
   meaning: string
   tags?: string[]
+  stats?: {
+    correct: number
+    incorrect: number
+    lastSeen?: number
+  }
 }
 
 const db = new PouchDB<Settings | Card>('flashcards')
@@ -118,6 +156,13 @@ const settings = ref<Settings>({
 })
 const showAlert = ref(false)
 const alertMessage = ref('')
+const showToast = ref(false)
+const toastMessage = ref('')
+let toastTimer: ReturnType<typeof setTimeout> | null = null
+const showConfirmModal = ref(false)
+const confirmTitle = ref('')
+const confirmMessage = ref('')
+const pendingAction = ref<null | 'clearWords' | 'clearStats'>(null)
 
 async function loadSettings() {
   try {
@@ -149,6 +194,15 @@ function showFeedback(msg: string) {
   setTimeout(() => (showAlert.value = false), 5000)
 }
 
+function showInfoToast(msg: string) {
+  toastMessage.value = msg
+  showToast.value = true
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => {
+    showToast.value = false
+  }, 3500)
+}
+
 async function importWords() {
   try {
     const input = document.createElement('input')
@@ -165,29 +219,58 @@ async function importWords() {
       const jsonData = XLSX.utils.sheet_to_json(worksheet)
       
       const cards = jsonData.map((row: any) => ({
-        word: row['คำ']?.toString() || '',
-        meaning: row['ความหมาย']?.toString() || '',
+        word: row['คำ']?.toString().trim() || '',
+        pinyin: row['พินอิน']?.toString().trim() || '',
+        meaning: row['ความหมาย']?.toString().trim() || '',
         tags: row['แท็ก']?.toString().split(',').map((t: string) => t.trim()).filter(Boolean) || []
       }))
       
-      // Get all existing words for duplicate check
+      // Build lookup for existing words, so duplicates can be updated instead of skipped
       const existingWords = await db.allDocs({ include_docs: true })
-      const existingWordSet = new Set(existingWords.rows
-        .filter(r => (r.doc as Card)?.word)
-        .map(r => (r.doc as Card).word.toLowerCase()))
-      
-      let importedCount = 0
-      for (const card of cards) {
-        if (card.word && card.meaning && !existingWordSet.has(card.word.toLowerCase())) {
-          await db.put({
-            _id: 'card_' + Date.now(),
-            ...card
-          })
-          importedCount++
-        }
+      const existingWordMap = new Map<string, Card & { _rev?: string }>()
+      for (const row of existingWords.rows) {
+        const doc = row.doc as (Card & { _rev?: string }) | undefined
+        if (!doc?.word) continue
+        existingWordMap.set(doc.word.toLowerCase(), doc)
       }
-      
-      showFeedback(`นำเข้าคำศัพท์สำเร็จ ${importedCount} คำ (ข้าม ${cards.length - importedCount} คำที่ซ้ำกัน)`)
+
+      let createdCount = 0
+      let updatedCount = 0
+      let skippedCount = 0
+      for (const card of cards) {
+        if (!card.word || !card.meaning) {
+          skippedCount++
+          continue
+        }
+
+        const key = card.word.toLowerCase()
+        const existing = existingWordMap.get(key)
+
+        if (existing?._id && existing._rev) {
+          const updatedDoc = {
+            ...existing,
+            ...card,
+            _id: existing._id,
+            _rev: existing._rev
+          }
+          const result = await db.put(updatedDoc)
+          existingWordMap.set(key, { ...updatedDoc, _rev: result.rev })
+          updatedCount++
+          continue
+        }
+
+        const createdDoc = {
+          _id: `card_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          ...card
+        }
+        const result = await db.put(createdDoc)
+        existingWordMap.set(key, { ...createdDoc, _rev: result.rev })
+        createdCount++
+      }
+
+      const summary = `นำเข้าสำเร็จ เพิ่มใหม่ ${createdCount} คำ, อัปเดตคำเดิม ${updatedCount} คำ, ข้าม ${skippedCount} แถว`
+      showFeedback(summary)
+      showInfoToast(summary)
     }
     
     input.click()
@@ -203,7 +286,7 @@ async function exportWords() {
     const data = res.rows
       .map(r => r.doc as Card)
       .filter(c => c.word)
-      .map(c => ({ คำ: c.word, ความหมาย: c.meaning, แท็ก: (c.tags || []).join(', ') }))
+      .map(c => ({ คำ: c.word, พินอิน: c.pinyin || '', ความหมาย: c.meaning, แท็ก: (c.tags || []).join(', ') }))
 
     const ws = XLSX.utils.json_to_sheet(data)
     const wb = XLSX.utils.book_new()
@@ -219,6 +302,77 @@ async function exportWords() {
   } catch (err) {
     console.error(err)
     showFeedback('ไม่สามารถส่งออกไฟล์ได้')
+  }
+}
+
+function openConfirmModal(action: 'clearWords' | 'clearStats') {
+  pendingAction.value = action
+  if (action === 'clearWords') {
+    confirmTitle.value = 'ยืนยันลบคำศัพท์ทั้งหมด'
+    confirmMessage.value = 'ข้อมูลคำศัพท์ทั้งหมดจะถูกลบถาวรและไม่สามารถย้อนกลับได้'
+  } else {
+    confirmTitle.value = 'ยืนยันลบข้อมูลสถิติทั้งหมด'
+    confirmMessage.value = 'ระบบจะรีเซ็ตจำนวนถูก/ผิดของคำศัพท์ทุกคำเป็น 0'
+  }
+  showConfirmModal.value = true
+}
+
+function closeConfirmModal() {
+  showConfirmModal.value = false
+  pendingAction.value = null
+}
+
+async function confirmAndRun() {
+  const action = pendingAction.value
+  closeConfirmModal()
+  if (action === 'clearWords') await clearAllWords()
+  if (action === 'clearStats') await clearAllStats()
+}
+
+async function clearAllWords() {
+  try {
+    const res = await db.allDocs({ include_docs: true })
+    const docs = res.rows
+      .map(r => r.doc as Card | undefined)
+      .filter(doc => doc?._id && doc._rev && doc.word) as Card[]
+
+    if (!docs.length) {
+      showInfoToast('ไม่มีคำศัพท์ให้ลบ')
+      return
+    }
+
+    await db.bulkDocs(docs.map(doc => ({ _id: doc._id!, _rev: doc._rev!, _deleted: true })))
+    const msg = `ลบคำศัพท์ทั้งหมดแล้ว ${docs.length} คำ`
+    showFeedback(msg)
+    showInfoToast(msg)
+  } catch (err) {
+    console.error(err)
+    showFeedback('เกิดข้อผิดพลาดในการลบคำศัพท์ทั้งหมด')
+  }
+}
+
+async function clearAllStats() {
+  try {
+    const res = await db.allDocs({ include_docs: true })
+    const docs = res.rows
+      .map(r => r.doc as Card | undefined)
+      .filter(doc => doc?._id && doc.word) as Card[]
+
+    let updated = 0
+    for (const doc of docs) {
+      const current = await db.get(doc._id!)
+      await db.put({
+        ...current,
+        stats: { correct: 0, incorrect: 0, lastSeen: Date.now() }
+      })
+      updated++
+    }
+    const msg = `ลบข้อมูลสถิติแล้ว ${updated} คำ`
+    showFeedback(msg)
+    showInfoToast(msg)
+  } catch (err) {
+    console.error(err)
+    showFeedback('เกิดข้อผิดพลาดในการลบข้อมูลสถิติ')
   }
 }
 

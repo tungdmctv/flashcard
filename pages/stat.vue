@@ -148,6 +148,7 @@
   <div class="modal" :class="{ 'modal-open': showPopup }">
     <div class="modal-box">
       <h3 class="text-3xl font-bold mb-4 text-center">{{ popupCard?.word }}</h3>
+      <p v-if="popupCard?.pinyin" class="mb-2 text-center opacity-70">พินอิน: {{ popupCard.pinyin }}</p>
       <p class="mb-4" v-html="popupCard?.meaning.replace(/\n/g, '<br>')"></p>
       <div class="modal-action">
         <div class="dropdown">
@@ -183,6 +184,7 @@ const itemsPerPage = 20;
 interface Card {
   _id?: string
   word: string
+  pinyin?: string
   meaning: string
   tags: string[]
   stats?: {
