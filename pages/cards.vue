@@ -33,10 +33,14 @@
 
     <!-- Pagination -->
     <div class="flex justify-center my-8">
-      <div class="btn-group">
-        <button class="btn" :disabled="currentPage === 1" @click="currentPage--">«</button>
-        <button class="btn">หน้า {{ currentPage }}</button>
-        <button class="btn" :disabled="currentPage >= totalPages" @click="currentPage++">»</button>
+      <div class="pagination-wrap">
+        <button class="btn pagination-btn" :disabled="currentPage === 1" @click="currentPage--">
+          <Icon name="material-symbols:chevron-left-rounded" class="text-xl" />
+        </button>
+        <button class="btn pagination-btn pagination-current">หน้า {{ currentPage }}</button>
+        <button class="btn pagination-btn" :disabled="currentPage >= totalPages" @click="currentPage++">
+          <Icon name="material-symbols:chevron-right-rounded" class="text-xl" />
+        </button>
       </div>
     </div>
 
@@ -67,10 +71,14 @@
 
     <!-- Pagination -->
     <div class="flex justify-center mt-8">
-      <div class="btn-group">
-        <button class="btn" :disabled="currentPage === 1" @click="currentPage--">«</button>
-        <button class="btn">หน้า {{ currentPage }}</button>
-        <button class="btn" :disabled="currentPage >= totalPages" @click="currentPage++">»</button>
+      <div class="pagination-wrap">
+        <button class="btn pagination-btn" :disabled="currentPage === 1" @click="currentPage--">
+          <Icon name="material-symbols:chevron-left-rounded" class="text-xl" />
+        </button>
+        <button class="btn pagination-btn pagination-current">หน้า {{ currentPage }}</button>
+        <button class="btn pagination-btn" :disabled="currentPage >= totalPages" @click="currentPage++">
+          <Icon name="material-symbols:chevron-right-rounded" class="text-xl" />
+        </button>
       </div>
     </div>
 
@@ -247,3 +255,26 @@ onMounted(() => {
   loadCards();
 })
 </script>
+
+<style scoped>
+.pagination-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 250, 240, 0.78);
+  border: 1px solid rgba(93, 58, 40, 0.2);
+}
+
+.pagination-btn {
+  min-height: 2.8rem;
+  height: 2.8rem;
+  border-radius: 999px;
+}
+
+.pagination-current {
+  min-width: 6.7rem;
+  font-weight: 700;
+}
+</style>

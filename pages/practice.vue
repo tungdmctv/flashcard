@@ -2,10 +2,10 @@
   <div class="text-lg">
     <!-- Controls -->
     <div class="flex justify-end items-center mb-6">
-      <div class="flex flex-wrap justify-end gap-4 items-center">
+      <div class="flex flex-wrap justify-end gap-3 items-center">
         <!-- Tag Filter -->
         <div class="dropdown dropdown-sm">
-          <label tabindex="0" class="btn m-1">
+          <label tabindex="0" class="btn control-btn h-14 min-h-14 px-6 text-3">
             <Icon name="material-symbols:label-important-rounded" /> Tags
           </label>
           <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
@@ -18,16 +18,16 @@
           </ul>
         </div>
         <!-- Mode Toggle -->
-        <button class="btn btn-sm" @click="toggleMode">
+        <button class="btn control-btn h-14 min-h-14 px-6 text-3" @click="toggleMode">
           <Icon v-if="isRandomMode" name="fe:random" />
           <Icon v-else name="lineicons:sort-amount-asc" />
           {{ isRandomMode ? 'Random' : 'A->B' }}
         </button>
-        <div @click="showStatsModal = true">
-          <Icon name="material-symbols:bar-chart-4-bars" class="mx-auto mb-1" />
-        </div>
+        <button class="btn control-btn h-14 min-h-14 w-14 p-0" @click="showStatsModal = true">
+          <Icon name="material-symbols:bar-chart-4-bars" class="text-xl" />
+        </button>
         <!-- End Game -->
-        <button class="btn btn-error btn-xs" @click="endGame">
+        <button class="btn control-btn h-14 min-h-14 px-6 text-3" @click="endGame">
           <Icon name="ic:baseline-stop-circle" /> End
         </button>
       </div>
@@ -131,34 +131,61 @@
 
     <!-- Statistics Modal -->
     <dialog id="stats_modal" class="modal" :class="{ 'modal-open': showStatsModal }">
-      <div class="modal-box w-full">
-        <h3 class="w-full flex justify-center items-center font-bold text-lg mb-4">Overall Statistics</h3>
-        <div class="w-2/3 mx-center stats stats-vertical shadow">
-          <div class="stat">
-            <div class="stat-title">Total Plays</div>
-            <div class="stat-value">{{ answeredCount }}</div>
+      <div class="modal-box w-11/12 max-w-4xl">
+        <h3 class="w-full flex justify-center items-center gap-2 font-extrabold text-2xl mb-5">
+          <Icon name="material-symbols:bar-chart-4-bars" />
+          สถิติการฝึกฝน
+        </h3>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body p-4">
+              <div class="flex items-center gap-2 text-sm opacity-80">
+                <Icon name="material-symbols:sports-score-outline" />
+                เล่นทั้งหมด
+              </div>
+              <div class="text-4xl font-extrabold">{{ answeredCount }}</div>
+            </div>
           </div>
-          <div class="stat">
-            <div class="stat-title">Correct</div>
-            <div class="stat-value text-success">{{ correctCount }}</div>
-            <div class="stat-desc">{{ successRate }}% </div>
+          <div class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body p-4">
+              <div class="flex items-center gap-2 text-sm opacity-80">
+                <Icon name="material-symbols:check-circle-outline" />
+                ตอบถูก
+              </div>
+              <div class="text-4xl font-extrabold text-success">{{ correctCount }}</div>
+              <div class="text-xs opacity-70">{{ successRate }}%</div>
+            </div>
           </div>
-          <div class="stat">
-            <div class="stat-title">Incorrect</div>
-            <div class="stat-value text-error">{{ incorrectCount }}</div>
-            <div class="stat-desc">{{ 100 - successRate }}%</div>
+          <div class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body p-4">
+              <div class="flex items-center gap-2 text-sm opacity-80">
+                <Icon name="material-symbols:cancel-outline-rounded" />
+                ตอบผิด
+              </div>
+              <div class="text-4xl font-extrabold text-error">{{ incorrectCount }}</div>
+              <div class="text-xs opacity-70">{{ 100 - successRate }}%</div>
+            </div>
           </div>
-          <div class="stat">
-            <div class="stat-title">Success Rate</div>
-            <div class="stat-value">{{ successRate }}%</div>
-            <div class="stat-desc">Overall success rate</div>
+          <div class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body p-4">
+              <div class="flex items-center gap-2 text-sm opacity-80">
+                <Icon name="material-symbols:workspace-premium-outline" />
+                ความสำเร็จ
+              </div>
+              <div class="text-4xl font-extrabold">{{ successRate }}%</div>
+              <div class="text-xs opacity-70">อัตราความสำเร็จรวม</div>
+            </div>
           </div>
         </div>
+
         <div class="modal-action">
           <nuxt-link to="/stat" class="btn btn-secondary">
-            <Icon name="material-symbols:bar-chart-4-bars" /> Stats
+            <Icon name="material-symbols:bar-chart-4-bars" /> หน้าสถิติละเอียด
           </nuxt-link>
-          <button class="btn" @click="showStatsModal = false">Close</button>
+          <button class="btn" @click="showStatsModal = false">
+            <Icon name="material-symbols:close-rounded" /> ปิด
+          </button>
         </div>
       </div>
     </dialog>
@@ -177,7 +204,7 @@ interface Card {
   pinyin?: string
   meaning: string
   tags: string[]
-  stats?: { correct: number; incorrect: number; lastSeen?: number }
+  stats?: { correct: number; incorrect: number; lastSeen?: number; dailyPlayed?: Record<string, number> }
 }
 
 interface SessionStats {
@@ -295,12 +322,15 @@ async function handleAnswer(correct: boolean) {
   const stats = {
     correct: doc.stats?.correct || 0,
     incorrect: doc.stats?.incorrect || 0,
-    lastSeen: doc.stats?.lastSeen || Date.now()
+    lastSeen: doc.stats?.lastSeen || Date.now(),
+    dailyPlayed: doc.stats?.dailyPlayed || {}
   }
   const key = correct ? 'correct' : 'incorrect';
   // Handle NaN by ensuring stats[key] is a number or defaulting to 0
   stats[key] = (Number(stats[key]) || 0) + 1;
   stats.lastSeen = Date.now();
+  const todayKey = new Date().toISOString().slice(0, 10)
+  stats.dailyPlayed[todayKey] = (Number(stats.dailyPlayed[todayKey]) || 0) + 1
   await db.put({ ...doc, stats });
   if (currentCard.value.stats) {
     currentCard.value.stats[correct ? 'correct' : 'incorrect']!++
@@ -604,3 +634,17 @@ onMounted(() => {
   loadSettings()
 })
 </script>
+
+<style scoped>
+.control-btn {
+  background: transparent !important;
+  color: #5d3a28 !important;
+  border: 1px solid rgba(93, 58, 40, 0.45) !important;
+  box-shadow: none !important;
+}
+
+.control-btn:hover {
+  background: rgba(255, 249, 236, 0.55) !important;
+  border-color: rgba(93, 58, 40, 0.7) !important;
+}
+</style>

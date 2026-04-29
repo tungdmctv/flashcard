@@ -3,11 +3,11 @@
     <h1 class="text-2xl font-bold mb-6">สถิติการฝึกฝน</h1>
 
     <!-- Search & Filter -->
-    <div class="flex justify-center items-center gap-1 mb-6 ">
+    <div class="flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-2 mb-6 ">
       <input v-model="searchQuery" type="text" placeholder="ค้นหาคำศัพท์..."
-        class="input input-bordered w-1/2" />
+        class="input input-bordered w-full sm:w-1/2" />
       <div class="dropdown">
-        <label tabindex="0" class="btn m-1"><Icon name="material-symbols:label-outline" class="mr-1" /> Tags</label>
+        <label tabindex="0" class="btn w-full sm:w-auto"><Icon name="material-symbols:label-outline" class="mr-1" /> Tags</label>
         <ul tabindex="0"
           class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[1] max-h-96 overflow-y-auto">
           <li v-for="tag in allTags.filter(t => t)" :key="tag">
@@ -21,31 +21,50 @@
     </div>
 
 
-    <div class="flex w-full justify-between items-center mb-6 gap-1 ">
-      <div class="stats shadow  w-full p-0">
-        <div class="stat">
-          <div class="stat-title">คำ</div>
-          <div class="stat-value">{{ stats.length }}</div>
+    <div class="w-full mb-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body p-4">
+            <div class="text-sm opacity-70">คำ</div>
+            <div class="text-4xl font-bold">{{ stats.length }}</div>
+          </div>
         </div>
-        <div class="stat">
-          <div class="stat-title">ถูก</div>
-          <div class="stat-value text-success">{{ totalCorrect }}</div>
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body p-4">
+            <div class="text-sm opacity-70">ถูก</div>
+            <div class="text-4xl font-bold text-success">{{ totalCorrect }}</div>
+          </div>
         </div>
-        <div class="stat">
-          <div class="stat-title">ผิด</div>
-          <div class="stat-value text-error">{{ totalWrong }}</div>
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body p-4">
+            <div class="text-sm opacity-70">ผิด</div>
+            <div class="text-4xl font-bold text-error">{{ totalWrong }}</div>
+          </div>
         </div>
-        <div class="stat">
-          <div class="stat-title">สำเร็จ</div>
-          <div 
-            class="stat-value" 
-            :style="{ color: getSuccessRateColor(overallSuccessRate) }"
-          >
-            {{ overallSuccessRate }}%
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body p-4">
+            <div class="text-sm opacity-70">สำเร็จ</div>
+            <div class="text-4xl font-bold" :style="{ color: getSuccessRateColor(overallSuccessRate) }">
+              {{ overallSuccessRate }}%
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
+    <div class="card bg-base-100 shadow-sm border border-base-300 mb-6">
+      <div class="card-body p-4">
+        <h3 class="text-lg font-bold">7 วันล่าสุด</h3>
+        <div class="consistency-grid mt-3">
+          <div v-for="item in last7DaysPlayed" :key="item.date" class="consistency-item">
+            <div class="consistency-bar-wrap">
+              <div class="consistency-bar" :style="{ height: `${item.height}%` }"></div>
+            </div>
+            <div class="text-sm font-bold">{{ item.count }}</div>
+            <div class="text-xs opacity-70">{{ item.label }}</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="flex text-sm justify-center my-4">
@@ -190,6 +209,7 @@ interface Card {
   stats?: {
     correct: number
     incorrect: number
+    dailyPlayed?: Record<string, number>
   }
 }
 
@@ -197,6 +217,7 @@ const db = new PouchDB<Card>('flashcards')
 const stats = ref<Card[]>([])
 const sortField = ref<'word' | 'correct' | 'incorrect' | 'successRate'>('successRate')
 const sortDirection = ref<'asc' | 'desc'>('desc')
+const last7DaysPlayed = ref<Array<{ date: string; label: string; count: number; height: number }>>([])
 function getSuccessRateColor(rate: number) {
   if (rate >= 80) return '#22c55e' // green-500
   if (rate >= 60) return '#eab308' // yellow-500
@@ -301,6 +322,27 @@ async function resetStats() {
 async function loadStats() {
   const res = await db.allDocs({ include_docs: true })
   stats.value = res.rows.filter(c => c.doc?.word).map(r => r.doc as Card)
+
+  const days: Array<{ date: string; label: string }> = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const date = d.toISOString().slice(0, 10)
+    const label = `${d.getMonth() + 1}/${d.getDate()}`
+    days.push({ date, label })
+  }
+
+  const dailyTotals = days.map((d) => {
+    const count = stats.value.reduce((sum, card) => {
+      return sum + Number(card.stats?.dailyPlayed?.[d.date] || 0)
+    }, 0)
+    return { ...d, count }
+  })
+  const maxCount = Math.max(...dailyTotals.map(d => d.count), 0)
+  last7DaysPlayed.value = dailyTotals.map((d) => ({
+    ...d,
+    height: maxCount > 0 ? Math.max(10, Math.round((d.count / maxCount) * 100)) : 10
+  }))
 }
 
 onMounted(() => {
@@ -337,3 +379,33 @@ function popupSpeak() {
   window.speechSynthesis.speak(utterance)
 }
 </script>
+
+<style scoped>
+.consistency-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.consistency-item {
+  text-align: center;
+}
+
+.consistency-bar-wrap {
+  height: 82px;
+  border-radius: 0.7rem;
+  background: rgba(120, 53, 15, 0.08);
+  border: 1px solid rgba(120, 53, 15, 0.18);
+  display: flex;
+  align-items: flex-end;
+  padding: 0.25rem;
+}
+
+.consistency-bar {
+  width: 100%;
+  border-radius: 0.45rem;
+  background: linear-gradient(180deg, #8b5d3d, #5d3a28);
+  transition: height 0.3s ease;
+}
+</style>

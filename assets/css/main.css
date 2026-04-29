@@ -1,3 +1,179 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --paper-1: #f8efdb;
+  --paper-2: #f1e0bf;
+  --paper-3: #e8d0a7;
+  --ink-1: #3f2a1d;
+  --ink-2: #6d4c38;
+  --line: rgba(109, 76, 56, 0.24);
+}
+
+body {
+  color: var(--ink-1);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(176, 117, 68, 0.24), transparent 35%),
+    radial-gradient(circle at 100% 100%, rgba(116, 69, 38, 0.22), transparent 35%),
+    linear-gradient(135deg, var(--paper-1) 0%, var(--paper-2) 55%, var(--paper-3) 100%);
+}
+
+.app-shell {
+  background: transparent;
+}
+
+.app-navbar {
+  background: rgba(255, 249, 236, 0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.app-titlebar {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(251, 191, 36, 0.2), transparent 35%),
+    linear-gradient(180deg, rgba(255, 249, 236, 0.95), rgba(245, 229, 195, 0.9));
+  border: 1px solid var(--line);
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 0 6px 20px rgba(93, 58, 40, 0.12);
+}
+
+.app-titlebar .btn-circle {
+  background: linear-gradient(180deg, #fff9ec, #efdebd) !important;
+  color: #5d3a28 !important;
+  border: 1px solid rgba(93, 58, 40, 0.28) !important;
+  box-shadow: 0 4px 14px rgba(93, 58, 40, 0.16);
+}
+
+.hamburger-btn:hover {
+  background: linear-gradient(180deg, #fff3dc, #e8cf9f) !important;
+}
+
+.hamburger-icon {
+  color: #5d3a28;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6));
+}
+
+.title-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  font-weight: 800;
+  color: #4a240f;
+  text-align: center;
+}
+
+.title-top {
+  font-size: 0.85rem;
+  letter-spacing: 0.32em;
+  font-weight: 600;
+  color: rgba(109, 76, 56, 0.78);
+}
+
+.title-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1;
+}
+
+.brand-btn {
+  background: linear-gradient(180deg, #7b4f33, #5d3a28);
+  border: 1px solid rgba(93, 58, 40, 0.8);
+  color: #fff7e8;
+}
+
+.card,
+.modal-box,
+.stats,
+.table,
+.dropdown-content,
+.hero,
+.alert {
+  background: rgba(255, 250, 240, 0.88) !important;
+  border: 1px solid var(--line);
+  color: var(--ink-1);
+}
+
+.btn {
+  border-color: rgba(93, 58, 40, 0.85) !important;
+  background: linear-gradient(180deg, #7b4f33, #5d3a28) !important;
+  color: #fff7e8 !important;
+  box-shadow: 0 2px 8px rgba(93, 58, 40, 0.12);
+}
+
+.btn-outline {
+  border-color: rgba(93, 58, 40, 0.85) !important;
+  background: linear-gradient(180deg, #7b4f33, #5d3a28) !important;
+  color: #fff7e8 !important;
+}
+
+.btn:hover {
+  background: linear-gradient(180deg, #8b5d3d, #694230) !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-accent,
+.btn-info,
+.btn-success,
+.btn-warning,
+.btn-error {
+  background: linear-gradient(180deg, #7b4f33, #5d3a28) !important;
+  color: #fff7e8 !important;
+  border-color: rgba(93, 58, 40, 0.85) !important;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-accent:hover,
+.btn-info:hover,
+.btn-success:hover,
+.btn-warning:hover,
+.btn-error:hover {
+  background: linear-gradient(180deg, #8b5d3d, #694230) !important;
+}
+
+.input,
+.select,
+.textarea {
+  background: rgba(255, 250, 240, 0.95);
+  border-color: var(--line);
+  color: var(--ink-1);
+}
+
+.badge {
+  border-color: var(--line);
+}
+
+.checkbox {
+  border-color: rgba(93, 58, 40, 0.55) !important;
+  background: rgba(255, 250, 240, 0.95) !important;
+}
+
+.checkbox:checked,
+.checkbox[aria-checked="true"] {
+  background: linear-gradient(180deg, #7b4f33, #5d3a28) !important;
+  border-color: rgba(93, 58, 40, 0.9) !important;
+  color: #fff7e8 !important;
+}
+
+.table :where(th, td) {
+  border-color: rgba(109, 76, 56, 0.18);
+}
+
+.stat-title {
+  color: rgba(63, 42, 29, 0.72);
+}
+
+.stat-value,
+h1,
+h2,
+h3 {
+  color: var(--ink-1);
+}

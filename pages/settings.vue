@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen bg-base-200 p-6">
+  <div class="min-h-screen p-4 md:p-6">
     <div v-if="showToast" class="toast toast-top toast-end z-[1000]">
       <div class="alert alert-info shadow-lg">
         <span>{{ toastMessage }}</span>
       </div>
     </div>
 
-    <div class="max-w-2xl mx-auto">
-      <h1 class="text-3xl font-semibold mb-8">ตั้งค่า AI</h1>
+    <div class="max-w-3xl mx-auto">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-amber-950 mb-6">ตั้งค่า AI</h1>
 
       <!-- Alert -->
       <div v-if="showAlert" role="alert" class="alert alert-info shadow-lg mb-6">
@@ -18,9 +18,9 @@
         <span>{{ alertMessage }}</span>
       </div>
 
-      <div class="card bg-base-100 shadow-md">
+      <div class="card settings-card shadow-md">
         <div class="card-body space-y-6">
-          <div class="text-xl font-medium border-b pb-2 mb-4">การตั้งค่า AI</div>
+          <div class="text-xl font-bold text-amber-900 border-b border-amber-900/20 pb-3 mb-2">การตั้งค่า AI</div>
 
           <div class="grid grid-cols-1 gap-6">
             <!-- API Key -->
@@ -28,12 +28,7 @@
               <label class="label">
                 <span class="label-text font-medium">OpenAI API Key</span>
               </label>
-              <input
-                type="password"
-                v-model="settings.openaiApiKey"
-                placeholder="sk-..."
-                class="input input-bordered w-full"
-              />
+              <input type="password" v-model="settings.openaiApiKey" placeholder="sk-..." class="input input-bordered w-full settings-input" />
               <label class="label">
                 <span class="label-text-alt">API Key จะถูกเก็บไว้ในเครื่องของคุณเท่านั้น</span>
               </label>
@@ -44,12 +39,7 @@
               <label class="label">
                 <span class="label-text font-medium">Custom Prompt</span>
               </label>
-              <textarea
-                v-model="settings.customPrompt"
-                placeholder="ระบุ prompt ที่ต้องการให้ AI ใช้ในการสร้างความหมาย"
-                rows="6"
-                class="textarea textarea-bordered w-full h-48 p-4 text-base resize-none"
-              ></textarea>
+              <textarea v-model="settings.customPrompt" placeholder="ระบุ prompt ที่ต้องการให้ AI ใช้ในการสร้างความหมาย" rows="6" class="textarea textarea-bordered w-full h-48 p-4 text-base resize-none settings-input"></textarea>
               <label class="label">
                 <span class="label-text-alt">ใช้ <code>{word}</code> เพื่อแทนที่คำศัพท์ที่ต้องการหาความหมาย</span>
               </label>
@@ -60,7 +50,7 @@
               <label class="label">
                 <span class="label-text font-medium">ภาษาที่ต้องการให้ AI ตอบ</span>
               </label>
-              <select v-model="settings.responseLanguage" class="select select-bordered w-full">
+              <select v-model="settings.responseLanguage" class="select select-bordered w-full settings-input">
                 <option v-for="lang in responseLanguages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
               </select>
             </div>
@@ -70,17 +60,17 @@
               <label class="label">
                 <span class="label-text font-medium">ภาษาที่อ่านออกเสียง</span>
               </label>
-              <select v-model="settings.pronunciationLanguage" class="select select-bordered w-full">
+              <select v-model="settings.pronunciationLanguage" class="select select-bordered w-full settings-input">
                 <option v-for="lang in languages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
               </select>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="flex flex-wrap justify-end space-x-4">
-            <button class="my-1 btn btn-info" @click="importWords"><Icon name="uiw:file-excel" />Import คำจาก Excel</button>
-            <button class="my-1 btn btn-secondary" @click="exportWords"><Icon name="uiw:file-excel" />Export คำเป็น Excel</button>
-            <button class="my-1 btn btn-primary" @click="saveSettings"><Icon name="material-symbols:save-outline-sharp" /> บันทึกการตั้งค่า</button>
+          <div class="flex flex-wrap justify-end gap-3">
+            <button class="btn btn-outline border-amber-900/30 text-amber-900 hover:bg-amber-100" @click="importWords"><Icon name="uiw:file-excel" />Import คำจาก Excel</button>
+            <button class="btn btn-outline border-amber-900/30 text-amber-900 hover:bg-amber-100" @click="exportWords"><Icon name="uiw:file-excel" />Export คำเป็น Excel</button>
+            <button class="btn brand-action-btn" @click="saveSettings"><Icon name="material-symbols:save-outline-sharp" /> บันทึกการตั้งค่า</button>
           </div>
           <div class="divider my-2">จัดการข้อมูล</div>
           <div class="flex flex-wrap justify-end gap-3">
@@ -378,3 +368,21 @@ async function clearAllStats() {
 
 onMounted(loadSettings)
 </script>
+
+<style scoped>
+.settings-card {
+  background: linear-gradient(180deg, rgba(255, 251, 240, 0.95), rgba(247, 237, 215, 0.95));
+  border: 1px solid rgba(109, 76, 56, 0.22);
+}
+
+.settings-input {
+  background: rgba(255, 252, 245, 0.95);
+  border-color: rgba(109, 76, 56, 0.28);
+}
+
+.brand-action-btn {
+  background: linear-gradient(180deg, #7b4f33, #5d3a28);
+  border: 1px solid rgba(93, 58, 40, 0.8);
+  color: #fff7e8;
+}
+</style>
