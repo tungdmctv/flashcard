@@ -1,0 +1,1 @@
+import{s,x as a,y as r,z as u,A as o}from"./CImpK-cZ.js";function i(e){const t=e||a();return t?.ssrContext?.head||t?.runWithContext(()=>{if(r())return u(o)})}function c(e,t={}){const n=i(t.nuxt);if(n)return s(e,{head:n,...t})}export{c as u};
