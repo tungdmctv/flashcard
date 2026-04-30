@@ -2,10 +2,10 @@
   <div class="text-lg">
     <!-- Controls -->
     <div class="flex justify-end items-center mb-6">
-      <div class="flex flex-wrap justify-end gap-3 items-center">
+      <div class="flex flex-wrap justify-end gap-2 md:gap-3 items-center">
         <!-- Tag Filter -->
         <div class="dropdown dropdown-sm">
-          <label tabindex="0" class="btn control-btn h-14 min-h-14 px-6 text-3">
+          <label tabindex="0" class="btn control-btn h-11 min-h-11 md:h-14 md:min-h-14 px-4 md:px-6 text-sm md:text-base">
             <Icon name="material-symbols:label-important-rounded" /> Tags
           </label>
           <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
@@ -18,16 +18,16 @@
           </ul>
         </div>
         <!-- Mode Toggle -->
-        <button class="btn control-btn h-14 min-h-14 px-6 text-3" @click="toggleMode">
+        <button class="btn control-btn h-11 min-h-11 md:h-14 md:min-h-14 px-4 md:px-6 text-sm md:text-base" @click="toggleMode">
           <Icon v-if="isRandomMode" name="fe:random" />
           <Icon v-else name="lineicons:sort-amount-asc" />
           {{ isRandomMode ? 'Random' : 'A->B' }}
         </button>
-        <button class="btn control-btn h-14 min-h-14 w-14 p-0" @click="showStatsModal = true">
-          <Icon name="material-symbols:bar-chart-4-bars" class="text-xl" />
+        <button class="btn control-btn h-11 min-h-11 w-11 md:h-14 md:min-h-14 md:w-14 p-0" @click="showStatsModal = true">
+          <Icon name="material-symbols:bar-chart-4-bars" class="text-lg md:text-xl" />
         </button>
         <!-- End Game -->
-        <button class="btn control-btn h-14 min-h-14 px-6 text-3" @click="endGame">
+        <button class="btn control-btn h-11 min-h-11 md:h-14 md:min-h-14 px-4 md:px-6 text-sm md:text-base" @click="endGame">
           <Icon name="ic:baseline-stop-circle" /> End
         </button>
       </div>
@@ -59,10 +59,10 @@
     <div class="w-full flex justify-end items-center pb-4">
       <!-- History Navigation -->
       <div class="flex items-center gap-2 ml-4">
-        <button class="btn btn-sm btn-outline" :disabled="sessionHistory.length === 0" @click="navigateHistory(-1)">
+        <button class="btn control-btn h-11 min-h-11 w-11 md:h-12 md:min-h-12 md:w-12 p-0" :disabled="sessionHistory.length === 0" @click="navigateHistory(-1)">
           <Icon name="material-symbols:arrow-back" />
         </button>
-        <button class="btn btn-sm btn-outline" :disabled="sessionHistory.length === 0" @click="navigateHistory(1)">
+        <button class="btn control-btn h-11 min-h-11 w-11 md:h-12 md:min-h-12 md:w-12 p-0" :disabled="sessionHistory.length === 0" @click="navigateHistory(1)">
           <Icon name="material-symbols:arrow-forward" />
         </button>
       </div>
@@ -105,10 +105,10 @@
           <option v-for="lang in languages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
         </select>
       </div>
-      <button class="btn" @click.stop="speak(selectLangToSpeak)">
+      <button class="btn control-btn" @click.stop="speak(selectLangToSpeak)">
         <Icon name="material-symbols:volume-up" /> อ่านออกเสียง
       </button>
-      <button v-if="currentCard?.pinyin" class="btn btn-outline" @click.stop="showPinyin = !showPinyin">
+      <button v-if="currentCard?.pinyin" class="btn control-btn" @click.stop="showPinyin = !showPinyin">
         <Icon name="material-symbols:translate" /> {{ showPinyin ? 'ซ่อน Pinyin' : 'แสดง Pinyin' }}
       </button>
     </div>

@@ -1,11 +1,18 @@
 <template>
   <section class="book-home min-h-[80vh] rounded-2xl p-4 md:p-8">
     <div class="mx-auto max-w-6xl">
+      <div class="flex justify-center mb-5">
+        <NuxtLink to="/practice" class="menu-card top-practice-btn">
+          <Icon name="material-symbols:play-circle" class="text-2xl" />
+          เริ่มฝึกฝน
+        </NuxtLink>
+      </div>
+
       <div class="grid grid-cols-3 gap-3 mb-6">
         <div class="paper-stat">
           <div class="flex items-center justify-center gap-2 text-amber-900/80">
             <Icon name="material-symbols:book-2-outline-rounded" class="text-xl" />
-            <span class="text-sm leading-none">คำศัพท์</span>
+            <span class="text-sm leading-none">คำ</span>
           </div>
           <div class="text-3xl md:text-4xl font-bold text-amber-950 leading-none my-3">{{ totalWords }}</div>
           <div class="text-[11px] text-amber-900/55">ทั้งหมด</div>
@@ -13,7 +20,7 @@
         <div class="paper-stat">
           <div class="flex items-center justify-center gap-2 text-amber-900/80">
             <Icon name="material-symbols:check-circle-outline" class="text-xl" />
-            <span class="text-sm leading-none">ตอบถูก</span>
+            <span class="text-sm leading-none">ถูก</span>
           </div>
           <div class="text-3xl md:text-4xl font-bold text-emerald-800 leading-none my-3">{{ totalCorrect }}</div>
           <div class="text-[11px] text-amber-900/55">ครั้ง</div>
@@ -21,7 +28,7 @@
         <div class="paper-stat">
           <div class="flex items-center justify-center gap-2 text-amber-900/80">
             <Icon name="material-symbols:cancel-outline-rounded" class="text-xl" />
-            <span class="text-sm leading-none">ตอบผิด</span>
+            <span class="text-sm leading-none">ผิด</span>
           </div>
           <div class="text-3xl md:text-4xl font-bold text-rose-800 leading-none my-3">{{ totalWrong }}</div>
           <div class="text-[11px] text-amber-900/55">ครั้ง</div>
@@ -212,6 +219,11 @@ async function installApp() {
 .menu-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(120, 53, 15, 0.18);
+}
+
+.top-practice-btn {
+  min-width: 220px;
+  min-height: 3.4rem;
 }
 
 .install-btn {
