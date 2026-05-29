@@ -125,6 +125,7 @@ interface Card {
   word: string
   pinyin?: string
   meaning: string
+  imageUrl?: string
   tags?: string[]
   stats?: {
     correct: number
@@ -142,7 +143,7 @@ const settings = ref<Settings>({
   openaiApiKey: '',
   customPrompt: 'ช่วยแปลความหมายของคำว่า {word} พร้อมยกตัวอย่างประโยค',
   responseLanguage: 'th',
-  pronunciationLanguage: 'th-TH'
+  pronunciationLanguage: 'zh'
 })
 const showAlert = ref(false)
 const alertMessage = ref('')
@@ -157,11 +158,22 @@ const pendingAction = ref<null | 'clearWords' | 'clearStats'>(null)
 async function loadSettings() {
   try {
     const doc = await db.get(SETTINGS_ID)
-    settings.value = doc as Settings
+    settings.value = {
+      ...(doc as Settings),
+      pronunciationLanguage: normalizePronunciationLanguage((doc as Settings).pronunciationLanguage)
+    }
   } catch (err: any) {
     if (err.name === 'not_found') await saveSettings()
     else console.error(err)
   }
+}
+
+function normalizePronunciationLanguage(lang?: string) {
+  if (!lang || lang === 'th-TH') return 'zh'
+  if (lang === 'zh-CN' || lang === 'zh-TW') return 'zh'
+  if (lang === 'en-US' || lang === 'en-GB') return 'en'
+  if (lang === 'th') return 'th'
+  return lang
 }
 
 async function saveSettings() {
@@ -208,12 +220,18 @@ async function importWords() {
       const worksheet = workbook.Sheets['Flashcards']
       const jsonData = XLSX.utils.sheet_to_json(worksheet)
       
-      const cards = jsonData.map((row: any) => ({
-        word: row['คำ']?.toString().trim() || '',
-        pinyin: row['พินอิน']?.toString().trim() || '',
-        meaning: row['ความหมาย']?.toString().trim() || '',
-        tags: row['แท็ก']?.toString().split(',').map((t: string) => t.trim()).filter(Boolean) || []
-      }))
+      const cards = jsonData.map((row: any) => {
+        const card: Card = {
+          word: row['คำ']?.toString().trim() || '',
+          pinyin: row['พินอิน']?.toString().trim() || '',
+          meaning: row['ความหมาย']?.toString().trim() || '',
+          tags: row['แท็ก']?.toString().split(',').map((t: string) => t.trim()).filter(Boolean) || []
+        }
+        if (Object.prototype.hasOwnProperty.call(row, 'รูปภาพ')) {
+          card.imageUrl = row['รูปภาพ']?.toString().trim() || undefined
+        }
+        return card
+      })
       
       // Build lookup for existing words, so duplicates can be updated instead of skipped
       const existingWords = await db.allDocs({ include_docs: true })
@@ -276,7 +294,7 @@ async function exportWords() {
     const data = res.rows
       .map(r => r.doc as Card)
       .filter(c => c.word)
-      .map(c => ({ คำ: c.word, พินอิน: c.pinyin || '', ความหมาย: c.meaning, แท็ก: (c.tags || []).join(', ') }))
+      .map(c => ({ คำ: c.word, พินอิน: c.pinyin || '', ความหมาย: c.meaning, รูปภาพ: c.imageUrl || '', แท็ก: (c.tags || []).join(', ') }))
 
     const ws = XLSX.utils.json_to_sheet(data)
     const wb = XLSX.utils.book_new()

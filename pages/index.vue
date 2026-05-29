@@ -101,6 +101,7 @@ useHead({
 interface Card {
   _id?: string
   word: string
+  imageUrl?: string
   meaning: string
   tags: string[]
   stats?: {

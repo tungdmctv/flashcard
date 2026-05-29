@@ -23,6 +23,15 @@
           <Icon v-else name="lineicons:sort-amount-asc" />
           {{ isRandomMode ? 'Random' : 'A->B' }}
         </button>
+        <button class="btn control-btn h-11 min-h-11 md:h-14 md:min-h-14 px-4 md:px-6 text-sm md:text-base" @click="togglePromptMode">
+          <Icon name="material-symbols:flip-camera-android-rounded" />
+          {{ promptMode === 'word' ? 'ศัพท์' : 'ความหมาย' }}
+        </button>
+        <label class="btn control-btn h-11 min-h-11 md:h-14 md:min-h-14 px-4 md:px-6 text-sm md:text-base">
+          <input v-model="showImage" type="checkbox" class="checkbox checkbox-sm" />
+          <Icon name="material-symbols:image-outline-rounded" />
+          ภาพ
+        </label>
         <button class="btn control-btn h-11 min-h-11 w-11 md:h-14 md:min-h-14 md:w-14 p-0" @click="showStatsModal = true">
           <Icon name="material-symbols:bar-chart-4-bars" class="text-lg md:text-xl" />
         </button>
@@ -70,14 +79,27 @@
     <!-- Quiz Card -->
     <div v-if="currentCard && !isGameOver" class="card bg-base-200 max-w-2xl mx-auto cursor-pointer relative"
       @click="toggleReveal">
-      <div @click="openEditModal(currentCard)" class="absolute top-2 right-2">
+      <div @click.stop="openEditModal(currentCard)" class="absolute top-2 right-2">
         <Icon name="material-symbols:edit-square-outline" />
       </div>
       <div class="card-body items-center text-center">
-        <h2 class="card-title text-6xl mb-4 py-6">{{ currentCard.word }}</h2>
-        <p v-if="showPinyin && currentCard.pinyin" class="text-lg mb-2 opacity-80">พินอิน: {{ currentCard.pinyin }}</p>
-        <!-- meaning with line breaks -->
-        <p v-show="isRevealed" class="text-xl mb-4" v-html="formattedMeaning"></p>
+        <div v-if="promptMode === 'word'">
+          <h2 class="card-title text-6xl mb-4 py-6">{{ currentCard.word }}</h2>
+          <p v-if="showPinyin && currentCard.pinyin" class="text-lg mb-2 opacity-80">พินอิน: {{ currentCard.pinyin }}</p>
+        </div>
+        <p v-else class="text-6xl md:text-7xl font-extrabold mb-4 py-8 leading-tight" v-html="formattedMeaning"></p>
+
+        <div v-if="showImage && currentCard.imageUrl" class="quiz-image-wrap">
+          <img :src="currentCard.imageUrl" :alt="currentCard.word" class="quiz-image" />
+        </div>
+
+        <div v-if="isRevealed" class="w-full">
+          <div v-if="promptMode === 'word'" class="text-5xl md:text-6xl font-extrabold mb-6 leading-tight" v-html="formattedMeaning"></div>
+          <div v-else>
+            <h2 class="card-title justify-center text-6xl mb-4 py-6">{{ currentCard.word }}</h2>
+            <p v-if="showPinyin && currentCard.pinyin" class="text-lg mb-2 opacity-80">พินอิน: {{ currentCard.pinyin }}</p>
+          </div>
+        </div>
         <div v-show="isRevealed && !isHistoryView" class="flex gap-4">
           <button class="btn btn-success" @click.stop="handleAnswer(true)">OK</button>
           <button class="btn btn-error" @click.stop="handleAnswer(false)">Again</button>
@@ -189,7 +211,7 @@
         </div>
       </div>
     </dialog>
-    <AddEdit id="edit-modal" :card="editingCard" />
+    <AddEdit id="edit-modal" :card="editingCard" @saveCard="handleEditSaved" />
   </div>
 </template>
 
@@ -203,6 +225,7 @@ interface Card {
   word: string
   pinyin?: string
   meaning: string
+  imageUrl?: string
   tags: string[]
   stats?: { correct: number; incorrect: number; lastSeen?: number; dailyPlayed?: Record<string, number> }
 }
@@ -223,8 +246,8 @@ interface WordStats {
 
 const db = new PouchDB<Card>('flashcards')
 const languages = ref(pronunciationLanguageData.languages);
-const selectLangToSpeak = ref('th-TH');
-const settings = ref<{ pronunciationLanguage: string }>({ pronunciationLanguage: 'th-TH' });
+const selectLangToSpeak = ref('zh');
+const settings = ref<{ pronunciationLanguage: string }>({ pronunciationLanguage: 'zh' });
 // State
 const cards = ref<Card[]>([])
 const currentIndex = ref(0)
@@ -243,6 +266,8 @@ const isLoadingAI = ref(false)
 const cardForm = ref({ word: '', meaning: '', tagsInput: '' })
 const wordStats = ref<Record<string, WordStats>>({})
 const displayQueue = ref<Card[]>([])
+const promptMode = ref<'word' | 'meaning'>('word')
+const showImage = ref(false)
 const sessionCorrectCount = ref(0)
 const sessionIncorrectCount = ref(0)
 const sessionAnsweredCount = computed(() => sessionCorrectCount.value + sessionIncorrectCount.value)
@@ -296,7 +321,8 @@ const currentCard = computed(() => displayQueue.value[currentIndex.value] || nul
 
 // Methods
 const allCards = ref<Card[]>([])
-async function loadCards() {
+async function loadCards(options: { preserveCurrent?: boolean } = {}) {
+  const currentCardId = options.preserveCurrent ? currentCard.value?._id || null : null
   const res = await db.allDocs({ include_docs: true })
   const docs = res.rows
     .map(r => r.doc!)
@@ -312,7 +338,7 @@ async function loadCards() {
     }
   }))
   allCards.value = [...cards.value]
-  rebuildQueue()
+  rebuildQueue(currentCardId)
 }
 
 async function handleAnswer(correct: boolean) {
@@ -398,10 +424,13 @@ function pickWeightedRandomIndex(queue: Card[]): number {
   return queue.length - 1
 }
 
-function rebuildQueue() {
+function rebuildQueue(preferredCardId: string | null = null) {
   const base = [...filteredCards.value]
   displayQueue.value = isRandomMode.value ? shuffleArray(base) : base
-  currentIndex.value = displayQueue.value.length ? 0 : -1
+  const preferredIndex = preferredCardId
+    ? displayQueue.value.findIndex(card => card._id === preferredCardId)
+    : -1
+  currentIndex.value = preferredIndex >= 0 ? preferredIndex : (displayQueue.value.length ? 0 : -1)
   isRevealed.value = false
   showPinyin.value = false
   // Clean queues when filter changes or mode changes
@@ -483,8 +512,7 @@ function speak(lang: string) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
 
   const utterance = new SpeechSynthesisUtterance(currentCard.value?.word || '')
-  const langMap: Record<string, string> = { th: 'th-TH', en: 'en-US', zh: 'zh-CN' }
-  utterance.lang = langMap[lang] ?? 'en-US'
+  utterance.lang = resolveSpeechLang(lang)
 
   const voices = window.speechSynthesis.getVoices()
   const voice = voices.find(v => v.lang === utterance.lang) ||
@@ -495,10 +523,38 @@ function speak(lang: string) {
   window.speechSynthesis.speak(utterance)
 }
 
+function resolveSpeechLang(lang: string) {
+  const langMap: Record<string, string> = {
+    th: 'th-TH',
+    'th-TH': 'th-TH',
+    en: 'en-US',
+    'en-US': 'en-US',
+    'en-GB': 'en-GB',
+    zh: 'zh-CN',
+    'zh-CN': 'zh-CN',
+    'zh-TW': 'zh-TW'
+  }
+  return langMap[lang] ?? lang
+}
+
+function normalizePronunciationLanguage(lang?: string) {
+  if (!lang || lang === 'th-TH') return 'zh'
+  if (lang === 'zh-CN' || lang === 'zh-TW') return 'zh'
+  if (lang === 'en-US' || lang === 'en-GB') return 'en'
+  if (lang === 'th') return 'th'
+  return lang
+}
+
 
 function toggleMode() {
   isRandomMode.value = !isRandomMode.value
   rebuildQueue()
+}
+
+function togglePromptMode() {
+  promptMode.value = promptMode.value === 'word' ? 'meaning' : 'word'
+  isRevealed.value = false
+  showPinyin.value = false
 }
 
 function toggleReveal() {
@@ -597,8 +653,9 @@ watch(selectedTags, () => {
 async function loadSettings() {
   try {
     const doc = await db.get<{ pronunciationLanguage: string }>('app_settings');
-    settings.value = { pronunciationLanguage: doc.pronunciationLanguage || 'th-TH' }
-    selectLangToSpeak.value = doc.pronunciationLanguage || 'th-TH'
+    const pronunciationLanguage = normalizePronunciationLanguage(doc.pronunciationLanguage)
+    settings.value = { pronunciationLanguage }
+    selectLangToSpeak.value = pronunciationLanguage
   } catch (err) {
     console.error('Failed to load settings:', err)
   }
@@ -615,6 +672,10 @@ function openEditModal(card?: Card) {
   setTimeout(() => {
     openModal("edit-modal")
   }, 40);
+}
+
+async function handleEditSaved() {
+  await loadCards({ preserveCurrent: true })
 }
 
 function openModal(id = "") {
@@ -646,5 +707,23 @@ onMounted(() => {
 .control-btn:hover {
   background: rgba(255, 249, 236, 0.55) !important;
   border-color: rgba(93, 58, 40, 0.7) !important;
+}
+
+.quiz-image-wrap {
+  width: min(100%, 420px);
+  max-height: 260px;
+  margin: 0 auto 1.5rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(93, 58, 40, 0.18);
+}
+
+.quiz-image {
+  width: 100%;
+  height: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  display: block;
 }
 </style>

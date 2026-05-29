@@ -168,6 +168,8 @@
     <div class="modal-box">
       <h3 class="text-3xl font-bold mb-4 text-center">{{ popupCard?.word }}</h3>
       <p v-if="popupCard?.pinyin" class="mb-2 text-center opacity-70">พินอิน: {{ popupCard.pinyin }}</p>
+      <img v-if="popupCard?.imageUrl" :src="popupCard.imageUrl" :alt="popupCard.word"
+        class="mb-4 h-56 w-full rounded-lg border border-base-300 bg-white object-contain" />
       <p class="mb-4" v-html="popupCard?.meaning.replace(/\n/g, '<br>')"></p>
       <div class="modal-action">
         <div class="dropdown">
@@ -205,6 +207,7 @@ interface Card {
   word: string
   pinyin?: string
   meaning: string
+  imageUrl?: string
   tags: string[]
   stats?: {
     correct: number
@@ -353,12 +356,12 @@ const popupCard = ref<Card | null>(null)
 const showPopup = ref(false)
 function openPopup(card: Card) { popupCard.value = card; showPopup.value = true }
 function closePopup() { showPopup.value = false }
-const selectLangToSpeak = ref('th-TH')
+const selectLangToSpeak = ref('zh')
 
 async function loadSettings() {
   try {
     const doc = await db.get<{ pronunciationLanguage: string }>('app_settings')
-    selectLangToSpeak.value = doc.pronunciationLanguage || 'th-TH'
+    selectLangToSpeak.value = normalizePronunciationLanguage(doc.pronunciationLanguage)
   } catch (err) {
     console.error('Failed to load settings:', err)
   }
@@ -367,8 +370,7 @@ async function loadSettings() {
 function popupSpeak() {
   if (!popupCard.value) return
   const utterance = new SpeechSynthesisUtterance(popupCard.value.word)
-  const langMap: Record<string, string> = { th: 'th-TH', en: 'en-US', zh: 'zh-CN' }
-  utterance.lang = langMap[selectLangToSpeak.value] ?? 'en-US'
+  utterance.lang = resolveSpeechLang(selectLangToSpeak.value)
 
   const voices = window.speechSynthesis.getVoices()
   const voice = voices.find(v => v.lang === utterance.lang) ||
@@ -377,6 +379,28 @@ function popupSpeak() {
 
   window.speechSynthesis.cancel()
   window.speechSynthesis.speak(utterance)
+}
+
+function resolveSpeechLang(lang: string) {
+  const langMap: Record<string, string> = {
+    th: 'th-TH',
+    'th-TH': 'th-TH',
+    en: 'en-US',
+    'en-US': 'en-US',
+    'en-GB': 'en-GB',
+    zh: 'zh-CN',
+    'zh-CN': 'zh-CN',
+    'zh-TW': 'zh-TW'
+  }
+  return langMap[lang] ?? lang
+}
+
+function normalizePronunciationLanguage(lang?: string) {
+  if (!lang || lang === 'th-TH') return 'zh'
+  if (lang === 'zh-CN' || lang === 'zh-TW') return 'zh'
+  if (lang === 'en-US' || lang === 'en-GB') return 'en'
+  if (lang === 'th') return 'th'
+  return lang
 }
 </script>
 

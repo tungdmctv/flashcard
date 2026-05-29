@@ -43,6 +43,16 @@
                         class="input input-bordered input-lg w-full" />
                 </div>
 
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">URL รูปภาพ (ถ้ามี)</span></label>
+                    <input v-model="cardForm.imageUrl" type="url" placeholder="https://example.com/image.jpg"
+                        class="input input-bordered input-lg w-full" />
+                    <div v-if="cardForm.imageUrl" class="mt-3 overflow-hidden rounded-lg border border-base-300 bg-base-100">
+                        <img :src="cardForm.imageUrl" :alt="cardForm.word || 'รูปภาพคำศัพท์'"
+                            class="h-48 w-full object-contain bg-white" />
+                    </div>
+                </div>
+
                 <!-- Tags -->
                 <div class="form-control">
                     <label class="label"><span class="label-text font-medium">แท็ก (คั่นด้วย ,)</span></label>
@@ -82,6 +92,7 @@ interface Card {
     word: string
     pinyin?: string
     meaning: string
+    imageUrl?: string
     tags: string[]
     createdAt?: number
     updatedAt?: number
@@ -96,13 +107,15 @@ watch(() => props.card, (newVal) => {
     cardForm.value.word = props.card?.word || ''
     cardForm.value.pinyin = props.card?.pinyin || ''
     cardForm.value.meaning = props.card?.meaning || ''
+    cardForm.value.imageUrl = props.card?.imageUrl || ''
     cardForm.value.tagsInput = Array.isArray(props.card?.tags) ? props.card.tags.join(', ') : props.card?.tags || ''
 })
 const db = new PouchDB<Card>('flashcards')
-const cardForm = ref<{ word: string; pinyin: string; meaning: string; tagsInput: string }>({
+const cardForm = ref<{ word: string; pinyin: string; meaning: string; imageUrl: string; tagsInput: string }>({
     word: props.card?.word || '',
     pinyin: props.card?.pinyin || '',
     meaning: props.card?.meaning || '',
+    imageUrl: props.card?.imageUrl || '',
     tagsInput: Array.isArray(props.card?.tags) ? props.card.tags.join(', ') : props.card?.tags || ''
 })
 
@@ -155,6 +168,7 @@ async function saveCard() {
     const word = cardForm.value.word.trim()
     const pinyin = cardForm.value.pinyin.trim()
     const meaning = cardForm.value.meaning.trim()
+    const imageUrl = cardForm.value.imageUrl.trim()
     if (!word || !meaning) return
 
     const duplicate = cards.value.find(c => c?.word?.toLowerCase() === word?.toLowerCase() && c._id !== props.card?._id)
@@ -172,6 +186,7 @@ async function saveCard() {
         word,
         pinyin: pinyin || undefined,
         meaning,
+        imageUrl: imageUrl || undefined,
         tags,
         createdAt: props.card?.createdAt || now,
         updatedAt: now
@@ -180,7 +195,7 @@ async function saveCard() {
     // save
     if (props.card?._id) {
         const doc = await db.get(props.card._id)
-        await db.put({ ...card, _id: props.card._id, _rev: doc._rev })
+        await db.put({ ...doc, ...card, _id: props.card._id, _rev: doc._rev })
     } else {
         await db.post(card)
     }

@@ -48,7 +48,7 @@
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <div v-for="card in paginatedCards" :key="card._id" class="card bg-base-200">
         <div class="card-body relative">
-          <button class="btn btn-circle btn-lg btn-ghost absolute top-2 right-2" @click="speakWord(card.word)"
+          <button type="button" class="btn btn-circle btn-lg btn-ghost absolute top-2 right-2" @click.stop="speakWord(card.word)"
             title="อ่านออกเสียง">
             <Icon name="material-symbols:volume-up" />
           </button>
@@ -56,6 +56,8 @@
             <h2 class="text-5xl">{{ card.word }}</h2>
 
           </div>
+          <img v-if="card.imageUrl" :src="card.imageUrl" :alt="card.word"
+            class="mt-3 h-40 w-full rounded-lg border border-base-300 bg-white object-contain" />
           <p v-if="card.pinyin" class="text-sm opacity-70">พินอิน: {{ card.pinyin }}</p>
           <p>{{ card.meaning }}</p>
           <div class="flex flex-wrap gap-2 mt-2">
@@ -114,18 +116,20 @@ interface Card {
   word: string
   pinyin?: string
   meaning: string
+  imageUrl?: string
   tags: string[]
   createdAt: number
   updatedAt: number
 }
 
-const settings = ref<{ pronunciationLanguage: string }>({ pronunciationLanguage: 'th-TH' });
+const settings = ref<{ pronunciationLanguage: string }>({ pronunciationLanguage: 'zh' });
 
 async function loadSettings() {
   try {
     const doc = await db.get<{ pronunciationLanguage: string }>('app_settings');
-    settings.value = { pronunciationLanguage: doc.pronunciationLanguage || 'th-TH' }
-    selectLangToSpeak.value = doc.pronunciationLanguage || 'th-TH'
+    const pronunciationLanguage = normalizePronunciationLanguage(doc.pronunciationLanguage)
+    settings.value = { pronunciationLanguage }
+    selectLangToSpeak.value = pronunciationLanguage
   } catch (err) {
     console.error('Failed to load settings:', err)
   }
@@ -136,8 +140,7 @@ function speakWord(text: string) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
 
   const utterance = new SpeechSynthesisUtterance(text || '')
-  const langMap: Record<string, string> = { th: 'th-TH', en: 'en-US', zh: 'zh-CN' }
-  utterance.lang = langMap[selectLangToSpeak.value] ?? 'en-US'
+  utterance.lang = resolveSpeechLang(selectLangToSpeak.value)
 
   const voices = window.speechSynthesis.getVoices()
   const voice = voices.find(v => v.lang === utterance.lang) ||
@@ -148,10 +151,32 @@ function speakWord(text: string) {
   window.speechSynthesis.speak(utterance)
 }
 
+function resolveSpeechLang(lang: string) {
+  const langMap: Record<string, string> = {
+    th: 'th-TH',
+    'th-TH': 'th-TH',
+    en: 'en-US',
+    'en-US': 'en-US',
+    'en-GB': 'en-GB',
+    zh: 'zh-CN',
+    'zh-CN': 'zh-CN',
+    'zh-TW': 'zh-TW'
+  }
+  return langMap[lang] ?? lang
+}
+
+function normalizePronunciationLanguage(lang?: string) {
+  if (!lang || lang === 'th-TH') return 'zh'
+  if (lang === 'zh-CN' || lang === 'zh-TW') return 'zh'
+  if (lang === 'en-US' || lang === 'en-GB') return 'en'
+  if (lang === 'th') return 'th'
+  return lang
+}
+
 
 const db = new PouchDB<Card>('flashcards')
 const languages = ref(pronunciationLanguageData.languages)
-const selectLangToSpeak = ref('th-TH')
+const selectLangToSpeak = ref('zh')
 
 // ----- STATE -----
 const cards = ref<Card[]>([])
@@ -162,7 +187,7 @@ const cardToDelete = ref<Card | undefined>()
 const showAddModal = ref(false)
 const showDeleteModal = ref(false)
 const isLoadingAI = ref(false)
-const cardForm = ref({ word: '', meaning: '', tagsInput: '' })
+const cardForm = ref({ word: '', meaning: '', imageUrl: '', tagsInput: '' })
 const currentPage = ref(1)
 const itemsPerPage = 12
 
@@ -199,6 +224,7 @@ function openAddModal() {
     word: '',
     pinyin: '',
     meaning: '',
+    imageUrl: '',
     tags: [],
     createdAt: 0,
     updatedAt: 0,
@@ -208,12 +234,12 @@ function openAddModal() {
 function openEditModal(card?: Card) {
   if (card) {
     editingCard.value = card
-    cardForm.value = { word: card.word, meaning: card.meaning, tagsInput: card.tags.join(', ') }
+    cardForm.value = { word: card.word, meaning: card.meaning, imageUrl: card.imageUrl || '', tagsInput: card.tags.join(', ') }
   } else {
     setTimeout(() => {
       editingCard.value = null
     }, 50);
-    cardForm.value = { word: '', meaning: '', tagsInput: '' }
+    cardForm.value = { word: '', meaning: '', imageUrl: '', tagsInput: '' }
   }
   showAddModal.value = true;
   setTimeout(() => {
@@ -231,7 +257,9 @@ function cancelDelete() { showDeleteModal.value = false; cardToDelete.value = un
 // ----- CRUD -----
 async function loadCards() {
   const res = await db.allDocs({ include_docs: true })
-  cards.value = res.rows.map(r => r.doc as Card)
+  cards.value = res.rows
+    .map(r => r.doc as Card)
+    .filter(card => card?.word)
 }
 
 
