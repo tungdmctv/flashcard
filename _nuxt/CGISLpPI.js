@@ -1,0 +1,1 @@
+function o(e=new Date){const n=e.getFullYear(),a=String(e.getMonth()+1).padStart(2,"0"),t=String(e.getDate()).padStart(2,"0");return`${n}-${a}-${t}`}function s(e){const n=[];for(let a=e-1;a>=0;a--){const t=new Date;t.setHours(0,0,0,0),t.setDate(t.getDate()-a),n.push({date:o(t),label:`${t.getMonth()+1}/${t.getDate()}`})}return n}export{s as g,o as t};
