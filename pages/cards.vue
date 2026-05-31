@@ -1,8 +1,14 @@
 <template>
   <div>
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">จัดการคำศัพท์</h1>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">จัดการคำศัพท์</h1>
+        <div class="text-sm opacity-70 mt-1">
+          ทั้งหมด {{ totalCards }} คำ
+          <span v-if="filteredCards.length !== totalCards"> · แสดง {{ filteredCards.length }} คำ</span>
+        </div>
+      </div>
       <button class="btn btn-primary" @click="openAddModal">เพิ่มคำศัพท์</button>
     </div>
 
@@ -11,13 +17,16 @@
       <input v-model="searchQuery" type="text" placeholder="ค้นหาคำศัพท์..."
         class="input input-bordered w-full max-w-xs" />
       <div class="dropdown">
-        <label tabindex="0" class="btn m-1">กรองตามแท็ก</label>
+        <label tabindex="0" class="btn m-1">กรองตามแท็ก<span v-if="selectedTags.length"> ({{ selectedTags.length }})</span></label>
         <ul tabindex="0"
-          class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-[1] max-h-96 overflow-y-auto">
-          <li v-for="tag in allTags.filter(t => t)" :key="tag">
+          class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 z-[1] max-h-96 overflow-y-auto">
+          <li v-for="item in tagCounts" :key="item.tag">
             <label class="cursor-pointer flex gap-2">
-              <input v-model="selectedTags" :value="tag" type="checkbox" class="checkbox" />
-              <span>{{ tag }}</span>
+              <input v-model="selectedTags" :value="item.tag" type="checkbox" class="checkbox" />
+              <span class="flex flex-1 items-center justify-between gap-3">
+                <span>{{ item.tag }}</span>
+                <span class="badge badge-neutral badge-sm">{{ item.count }}</span>
+              </span>
             </label>
           </li>
         </ul>
@@ -131,6 +140,7 @@ async function loadSettings() {
     settings.value = { pronunciationLanguage }
     selectLangToSpeak.value = pronunciationLanguage
   } catch (err) {
+    if ((err as { status?: number }).status === 404) return
     console.error('Failed to load settings:', err)
   }
 }
@@ -194,7 +204,19 @@ const itemsPerPage = 12
 const { getMeaning } = useOpenAI()
 
 // ----- COMPUTED -----
-const allTags = computed(() => Array.from(new Set(cards.value.flatMap(c => c.tags))))
+const totalCards = computed(() => cards.value.length)
+
+const tagCounts = computed(() => {
+  const counts = new Map<string, number>()
+
+  cards.value.forEach((card) => {
+    const cardTags = new Set((card.tags || []).map(tag => tag.trim()).filter(Boolean))
+    cardTags.forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1))
+  })
+
+  return Array.from(counts, ([tag, count]) => ({ tag, count }))
+    .sort((a, b) => a.tag.localeCompare(b.tag))
+})
 
 const filteredCards = computed(() =>
   cards.value

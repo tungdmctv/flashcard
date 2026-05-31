@@ -131,14 +131,7 @@ async function loadStats() {
     ? Math.round((totalCorrect.value / totalAttempts) * 10000) / 100
     : 0
 
-  const days: Array<{ date: string; label: string }> = []
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    const date = d.toISOString().slice(0, 10)
-    const label = `${d.getMonth() + 1}/${d.getDate()}`
-    days.push({ date, label })
-  }
+  const days = getLastLocalDays(7)
 
   const dailyTotals = days.map((d) => {
     const count = cards.reduce((sum, card) => {

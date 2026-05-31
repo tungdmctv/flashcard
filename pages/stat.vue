@@ -326,14 +326,7 @@ async function loadStats() {
   const res = await db.allDocs({ include_docs: true })
   stats.value = res.rows.filter(c => c.doc?.word).map(r => r.doc as Card)
 
-  const days: Array<{ date: string; label: string }> = []
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    const date = d.toISOString().slice(0, 10)
-    const label = `${d.getMonth() + 1}/${d.getDate()}`
-    days.push({ date, label })
-  }
+  const days = getLastLocalDays(7)
 
   const dailyTotals = days.map((d) => {
     const count = stats.value.reduce((sum, card) => {
@@ -363,6 +356,7 @@ async function loadSettings() {
     const doc = await db.get<{ pronunciationLanguage: string }>('app_settings')
     selectLangToSpeak.value = normalizePronunciationLanguage(doc.pronunciationLanguage)
   } catch (err) {
+    if ((err as { status?: number }).status === 404) return
     console.error('Failed to load settings:', err)
   }
 }

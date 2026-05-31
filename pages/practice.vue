@@ -355,7 +355,7 @@ async function handleAnswer(correct: boolean) {
   // Handle NaN by ensuring stats[key] is a number or defaulting to 0
   stats[key] = (Number(stats[key]) || 0) + 1;
   stats.lastSeen = Date.now();
-  const todayKey = new Date().toISOString().slice(0, 10)
+  const todayKey = toLocalDateKey()
   stats.dailyPlayed[todayKey] = (Number(stats.dailyPlayed[todayKey]) || 0) + 1
   await db.put({ ...doc, stats });
   if (currentCard.value.stats) {
