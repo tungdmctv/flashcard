@@ -4,6 +4,20 @@ export default defineNuxtConfig({
   css: ['@/assets/css/tailwind.css', '@/assets/css/main.css'],
   modules: ['nuxt-icon', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt'],
   ssr: false,
+  watchers: {
+    chokidar: {
+      followSymlinks: false,
+      ignored: ['**/tmp_spreadsheet_work/**']
+    }
+  },
+  vite: {
+    server: {
+      watch: {
+        followSymlinks: false,
+        ignored: ['**/tmp_spreadsheet_work/**']
+      }
+    }
+  },
   app: {
     baseURL: '/flashcard/',
     head: {

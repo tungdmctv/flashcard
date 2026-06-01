@@ -85,6 +85,18 @@
           <Icon name="material-symbols:download" class="w-6 h-6 inline-block" /> Install App
         </button>
       </div>
+
+      <section class="extra-knowledge mt-10">
+        <div>
+          <div class="extra-label">ความรู้เพิ่มเติม</div>
+          <h2>ตารางคำจีนหน้าคล้าย พร้อม Pinyin</h2>
+          <p>รวมตัวจีนที่คนเรียนใหม่สับสนบ่อย เช่น 我 / 找 และ 钱 พร้อมคำอ่านกับความหมายไทย</p>
+        </div>
+        <a href="/flashcard/chinese-similar-characters-pinyin.html" class="knowledge-link">
+          <Icon name="material-symbols:menu-book-outline-rounded" class="text-3xl" />
+          <span>เปิดตาราง</span>
+        </a>
+      </section>
     </div>
   </section>
 </template>
@@ -228,6 +240,56 @@ async function installApp() {
   color: #fff9ec;
 }
 
+.extra-knowledge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(120, 53, 15, 0.22);
+  background: rgba(255, 251, 240, 0.82);
+  padding: 1.1rem;
+}
+
+.extra-label {
+  color: rgba(120, 53, 15, 0.72);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.extra-knowledge h2 {
+  margin: 0.15rem 0 0.25rem;
+  color: #4a2f1b;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.extra-knowledge p {
+  margin: 0;
+  color: rgba(74, 47, 27, 0.72);
+  font-size: 0.95rem;
+}
+
+.knowledge-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-width: 150px;
+  min-height: 3.4rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(120, 53, 15, 0.28);
+  background: linear-gradient(180deg, #fff9ec, #f4e4c4);
+  color: #4a2f1b;
+  font-weight: 800;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.knowledge-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(120, 53, 15, 0.18);
+}
+
 .consistency-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -254,5 +316,16 @@ async function installApp() {
   border-radius: 0.45rem;
   background: linear-gradient(180deg, #8b5d3d, #5d3a28);
   transition: height 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .extra-knowledge {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .knowledge-link {
+    width: 100%;
+  }
 }
 </style>
