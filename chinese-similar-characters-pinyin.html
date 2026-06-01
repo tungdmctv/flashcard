@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ตารางคำจีนหน้าคล้าย พร้อม Pinyin และตัวอย่าง</title>
+  <style>
+    :root {
+      --bg: #fff8f0;
+      --card: #ffffff;
+      --orange: #d66a00;
+      --orange2: #ffad4d;
+      --soft: #fff1df;
+      --line: #f0d7bb;
+      --text: #222;
+      --muted: #555;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1220px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.08);
+    }
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      color: var(--orange);
+      font-size: clamp(24px, 4vw, 34px);
+    }
+    .subtitle {
+      margin: 0 0 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .legend {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      color: #6b3b08;
+      font-size: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--orange2);
+      color: white;
+      text-align: left;
+      padding: 13px 14px;
+      font-size: 16px;
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      vertical-align: top;
+      background: white;
+    }
+    tbody tr:nth-child(even) td { background: #fff7ee; }
+    .group { font-size: 27px; font-weight: 800; line-height: 2.1; min-width: 190px; }
+    .pinyin-only { color: #a65300; font-weight: 700; line-height: 1.9; min-width: 150px; }
+    .meaning { min-width: 250px; }
+    .meaning div { margin-bottom: 7px; }
+    .examples { min-width: 390px; }
+    .ex { margin-bottom: 10px; padding-bottom: 9px; border-bottom: 1px dashed #ebceb0; }
+    .ex:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+    ruby {
+      ruby-position: over;
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      font-weight: 700;
+      color: #111;
+    }
+    rt {
+      font-size: 0.52em;
+      color: #b35a00;
+      font-weight: 600;
+      letter-spacing: 0;
+      user-select: text;
+    }
+    .group ruby { margin-right: 12px; }
+    .example-cn { font-size: 20px; display: inline-block; margin-right: 8px; }
+    .thai { color: #333; }
+    .tag {
+      display: inline-block;
+      color: #8a4300;
+      background: #ffe0b8;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 13px;
+      margin: 0 0 6px 6px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+    .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 30px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #fff1df;
+      color: #a65300;
+      font-size: 14px;
+      font-weight: 800;
+      vertical-align: middle;
+    }
+    .priority {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+      margin: 0 0 18px;
+    }
+    .priority div {
+      border: 1px solid var(--line);
+      background: #fffaf5;
+      border-radius: 12px;
+      padding: 9px 10px;
+      font-size: 15px;
+    }
+    .knowledge {
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 2px solid var(--line);
+    }
+    .knowledge h2 {
+      margin: 0 0 8px;
+      color: var(--orange);
+      font-size: clamp(21px, 3vw, 28px);
+      text-align: center;
+    }
+    .knowledge-intro {
+      margin: 0 0 16px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 16px;
+    }
+    .quick-meanings {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+    .quick-meanings div {
+      border: 1px solid var(--line);
+      background: #fffaf5;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #6b3b08;
+    }
+    .compact-table .group { min-width: 210px; }
+    .compact-table .meaning { min-width: 220px; }
+    @media (max-width: 860px) {
+      body { padding: 12px; }
+      .wrap { padding: 14px; border-radius: 16px; }
+      table, thead, tbody, th, td, tr { display: block; }
+      thead { display: none; }
+      tbody tr { margin-bottom: 14px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: white; }
+      tbody td { border-top: 1px solid var(--line); background: white !important; }
+      tbody td:first-child { border-top: 0; }
+      td::before {
+        content: attr(data-label);
+        display: block;
+        color: var(--orange);
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+      .group { font-size: 24px; min-width: 0; }
+      .examples { min-width: 0; }
+      .meaning { min-width: 0; }
+      .pinyin-only { min-width: 0; }
+      .knowledge { margin-top: 22px; padding-top: 18px; }
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .wrap { box-shadow: none; border-radius: 0; max-width: none; }
+      thead th { position: static; }
+      tbody td { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>ตารางคำจีนหน้าคล้าย / เสียงใกล้ ใช้บ่อย</h1>
+    <p class="subtitle">เพิ่มชุดคำที่เจอบ่อย พร้อมตัวอย่าง และใส่ pinyin ทุกจุดที่มีตัวจีน</p>
+    <div class="legend">วิธีอ่าน: ตัวจีนจะแสดงแบบ <ruby>很好<rt>hěn hǎo</rt></ruby> คือมี pinyin อยู่เหนือคำจีน ทั้งคำหลัก ความหมาย และตัวอย่าง</div>
+    <div class="priority">
+      <div>ควรจำก่อน: <ruby>的得地<rt>de de de</rt></ruby></div>
+      <div>ถามตอบบ่อย: <ruby>那哪<rt>nà nǎ</rt></ruby></div>
+      <div>ใช้ทุกวัน: <ruby>喝渴<rt>hē kě</rt></ruby></div>
+      <div>จำผิดบ่อย: <ruby>课棵颗<rt>kè kē kē</rt></ruby></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>กลุ่มคำ</th>
+          <th>Pinyin</th>
+          <th>ความหมายไทย</th>
+          <th>ตัวอย่างพร้อม Pinyin</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">1</span>
+            <span class="tag">เจอบ่อยมาก</span><br>
+            <ruby>很<rt>hěn</rt></ruby><ruby>跟<rt>gēn</rt></ruby><ruby>根<rt>gēn</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">hěn / gēn / gēn</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>很<rt>hěn</rt></ruby> = มาก</div>
+<div><ruby>跟<rt>gēn</rt></ruby> = กับ / ตาม / ติดตาม</div>
+<div><ruby>根<rt>gēn</rt></ruby> = ราก / ลักษณนามของที่เป็นแท่งยาว</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>很好<rt>hěn hǎo</rt></ruby></span><span class="thai">= ดีมาก</span></div>
+<div class="ex"><span class="example-cn"><ruby>跟我去<rt>gēn wǒ qù</rt></ruby></span><span class="thai">= ไปกับฉัน</span></div>
+<div class="ex"><span class="example-cn"><ruby>一根筷子<rt>yì gēn kuài zi</rt></ruby></span><span class="thai">= ตะเกียบ 1 อัน</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">2</span>
+            <span class="tag">ข้อสอบชอบออก</span><br>
+            <ruby>的<rt>de</rt></ruby><ruby>得<rt>de / dé / děi</rt></ruby><ruby>地<rt>de / dì</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">de / de / dé / děi / de / dì</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>的<rt>de</rt></ruby> = ของ / ใช้ขยายคำนาม</div>
+<div><ruby>得<rt>de</rt></ruby> = ใช้หลังกริยา บอกผลหรือระดับ</div>
+<div><ruby>得<rt>dé</rt></ruby> = ได้รับ / ได้มา</div>
+<div><ruby>得<rt>děi</rt></ruby> = ต้อง / จำเป็นต้อง</div>
+<div><ruby>地<rt>de</rt></ruby> = ใช้ขยายคำกริยา แปลว่า อย่าง...</div>
+<div><ruby>地<rt>dì</rt></ruby> = พื้นดิน / สถานที่</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>我的书<rt>wǒ de shū</rt></ruby></span><span class="thai">= หนังสือของฉัน</span></div>
+<div class="ex"><span class="example-cn"><ruby>他说得很好<rt>tā shuō de hěn hǎo</rt></ruby></span><span class="thai">= เขาพูดได้ดีมาก</span></div>
+<div class="ex"><span class="example-cn"><ruby>我得去<rt>wǒ děi qù</rt></ruby></span><span class="thai">= ฉันต้องไป</span></div>
+<div class="ex"><span class="example-cn"><ruby>慢慢地走<rt>màn màn de zǒu</rt></ruby></span><span class="thai">= เดินอย่างช้า ๆ</span></div>
+<div class="ex"><span class="example-cn"><ruby>地方<rt>dì fang</rt></ruby></span><span class="thai">= สถานที่</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">3</span>
+            <span class="tag">พื้นฐานมาก</span><br>
+            <ruby>在<rt>zài</rt></ruby><ruby>再<rt>zài</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">zài / zài</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>在<rt>zài</rt></ruby> = อยู่ / อยู่ที่ / กำลัง</div>
+<div><ruby>再<rt>zài</rt></ruby> = อีกครั้ง / ค่อย...</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>我在学习中文<rt>wǒ zài xué xí Zhōng wén</rt></ruby></span><span class="thai">= ฉันกำลังเรียนภาษาจีน</span></div>
+<div class="ex"><span class="example-cn"><ruby>再见<rt>zài jiàn</rt></ruby></span><span class="thai">= พบกันใหม่</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">4</span>
+            <span class="tag">ถาม-ตอบบ่อย</span><br>
+            <ruby>那<rt>nà</rt></ruby><ruby>哪<rt>nǎ</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">nà / nǎ</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>那<rt>nà</rt></ruby> = นั้น / นั่น</div>
+<div><ruby>哪<rt>nǎ</rt></ruby> = ไหน / ที่ไหน</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>那个人是谁<rt>nà ge rén shì shéi</rt></ruby></span><span class="thai">= คนนั้นคือใคร</span></div>
+<div class="ex"><span class="example-cn"><ruby>你要哪个<rt>nǐ yào nǎ ge</rt></ruby></span><span class="thai">= คุณเอาอันไหน</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">5</span>
+            <span class="tag">เสียงต่างกันชัด</span><br>
+            <ruby>马<rt>mǎ</rt></ruby><ruby>妈<rt>mā</rt></ruby><ruby>吗<rt>ma</rt></ruby><ruby>骂<rt>mà</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">mǎ / mā / ma / mà</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>马<rt>mǎ</rt></ruby> = ม้า</div>
+<div><ruby>妈<rt>mā</rt></ruby> = แม่</div>
+<div><ruby>吗<rt>ma</rt></ruby> = ไหม / ใช้ท้ายประโยคคำถาม</div>
+<div><ruby>骂<rt>mà</rt></ruby> = ด่า</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>马很大<rt>mǎ hěn dà</rt></ruby></span><span class="thai">= ม้าตัวใหญ่มาก</span></div>
+<div class="ex"><span class="example-cn"><ruby>妈妈<rt>mā ma</rt></ruby></span><span class="thai">= แม่</span></div>
+<div class="ex"><span class="example-cn"><ruby>你好吗<rt>nǐ hǎo ma</rt></ruby></span><span class="thai">= คุณสบายดีไหม</span></div>
+<div class="ex"><span class="example-cn"><ruby>不要骂人<rt>bú yào mà rén</rt></ruby></span><span class="thai">= อย่าด่าคนอื่น</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">6</span>
+            <span class="tag">ใช้ชีวิตประจำวัน</span><br>
+            <ruby>买<rt>mǎi</rt></ruby><ruby>卖<rt>mài</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">mǎi / mài</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>买<rt>mǎi</rt></ruby> = ซื้อ</div>
+<div><ruby>卖<rt>mài</rt></ruby> = ขาย</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>买东西<rt>mǎi dōng xi</rt></ruby></span><span class="thai">= ซื้อของ</span></div>
+<div class="ex"><span class="example-cn"><ruby>卖水果<rt>mài shuǐ guǒ</rt></ruby></span><span class="thai">= ขายผลไม้</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">7</span>
+            <span class="tag">ออกเสียงเหมือนกัน</span><br>
+            <ruby>坐<rt>zuò</rt></ruby><ruby>座<rt>zuò</rt></ruby><ruby>做<rt>zuò</rt></ruby><ruby>作<rt>zuò</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">zuò / zuò / zuò / zuò</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>坐<rt>zuò</rt></ruby> = นั่ง</div>
+<div><ruby>座<rt>zuò</rt></ruby> = ที่นั่ง / ลักษณนามอาคาร สะพาน ภูเขา</div>
+<div><ruby>做<rt>zuò</rt></ruby> = ทำ</div>
+<div><ruby>作<rt>zuò</rt></ruby> = งาน / ประพันธ์ / ใช้ในคำทางการ</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>请坐<rt>qǐng zuò</rt></ruby></span><span class="thai">= เชิญนั่ง</span></div>
+<div class="ex"><span class="example-cn"><ruby>一座桥<rt>yí zuò qiáo</rt></ruby></span><span class="thai">= สะพานหนึ่งแห่ง</span></div>
+<div class="ex"><span class="example-cn"><ruby>做饭<rt>zuò fàn</rt></ruby></span><span class="thai">= ทำอาหาร</span></div>
+<div class="ex"><span class="example-cn"><ruby>作业<rt>zuò yè</rt></ruby></span><span class="thai">= การบ้าน</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">8</span>
+            <span class="tag">ตระกูล青</span><br>
+            <ruby>请<rt>qǐng</rt></ruby><ruby>情<rt>qíng</rt></ruby><ruby>晴<rt>qíng</rt></ruby><ruby>清<rt>qīng</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">qǐng / qíng / qíng / qīng</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>请<rt>qǐng</rt></ruby> = เชิญ / กรุณา</div>
+<div><ruby>情<rt>qíng</rt></ruby> = ความรู้สึก / อารมณ์</div>
+<div><ruby>晴<rt>qíng</rt></ruby> = ฟ้าแจ่มใส</div>
+<div><ruby>清<rt>qīng</rt></ruby> = ใส / สะอาด</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>请坐<rt>qǐng zuò</rt></ruby></span><span class="thai">= เชิญนั่ง</span></div>
+<div class="ex"><span class="example-cn"><ruby>心情<rt>xīn qíng</rt></ruby></span><span class="thai">= อารมณ์ / ความรู้สึก</span></div>
+<div class="ex"><span class="example-cn"><ruby>晴天<rt>qíng tiān</rt></ruby></span><span class="thai">= วันฟ้าใส</span></div>
+<div class="ex"><span class="example-cn"><ruby>清水<rt>qīng shuǐ</rt></ruby></span><span class="thai">= น้ำใส</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">9</span>
+            <span class="tag">พื้นฐานมาก</span><br>
+            <ruby>他<rt>tā</rt></ruby><ruby>她<rt>tā</rt></ruby><ruby>它<rt>tā</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">tā / tā / tā</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>他<rt>tā</rt></ruby> = เขา ผู้ชาย</div>
+<div><ruby>她<rt>tā</rt></ruby> = เธอ ผู้หญิง</div>
+<div><ruby>它<rt>tā</rt></ruby> = มัน สัตว์/สิ่งของ</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>他是老师<rt>tā shì lǎo shī</rt></ruby></span><span class="thai">= เขาเป็นครู</span></div>
+<div class="ex"><span class="example-cn"><ruby>她很好<rt>tā hěn hǎo</rt></ruby></span><span class="thai">= เธอดีมาก</span></div>
+<div class="ex"><span class="example-cn"><ruby>它很可爱<rt>tā hěn kě ài</rt></ruby></span><span class="thai">= มันน่ารักมาก</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">10</span>
+            <span class="tag">หน้าคล้ายมาก</span><br>
+            <ruby>们<rt>men</rt></ruby><ruby>门<rt>mén</rt></ruby><ruby>问<rt>wèn</rt></ruby><ruby>间<rt>jiān</rt></ruby><ruby>闻<rt>wén</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">men / mén / wèn / jiān / wén</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>们<rt>men</rt></ruby> = พวก... ใช้กับสรรพนามหรือคน</div>
+<div><ruby>门<rt>mén</rt></ruby> = ประตู</div>
+<div><ruby>问<rt>wèn</rt></ruby> = ถาม</div>
+<div><ruby>间<rt>jiān</rt></ruby> = ห้อง / ระหว่าง</div>
+<div><ruby>闻<rt>wén</rt></ruby> = ได้ยิน / ข่าว</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>我们<rt>wǒ men</rt></ruby></span><span class="thai">= พวกเรา</span></div>
+<div class="ex"><span class="example-cn"><ruby>门口<rt>mén kǒu</rt></ruby></span><span class="thai">= หน้าประตู</span></div>
+<div class="ex"><span class="example-cn"><ruby>请问<rt>qǐng wèn</rt></ruby></span><span class="thai">= ขอถามหน่อย</span></div>
+<div class="ex"><span class="example-cn"><ruby>房间<rt>fáng jiān</rt></ruby></span><span class="thai">= ห้อง</span></div>
+<div class="ex"><span class="example-cn"><ruby>新闻<rt>xīn wén</rt></ruby></span><span class="thai">= ข่าว</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">11</span>
+            <span class="tag">เส้นเพิ่มนิดเดียว</span><br>
+            <ruby>我<rt>wǒ</rt></ruby><ruby>找<rt>zhǎo</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">wǒ / zhǎo</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>我<rt>wǒ</rt></ruby> = ฉัน / ผม</div>
+<div><ruby>找<rt>zhǎo</rt></ruby> = หา / ตามหา</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>我是学生<rt>wǒ shì xué sheng</rt></ruby></span><span class="thai">= ฉันเป็นนักเรียน</span></div>
+<div class="ex"><span class="example-cn"><ruby>找老师<rt>zhǎo lǎo shī</rt></ruby></span><span class="thai">= หาครู</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">12</span>
+            <span class="tag">ใช้บอกที่อยู่</span><br>
+            <ruby>住<rt>zhù</rt></ruby><ruby>注<rt>zhù</rt></ruby><ruby>往<rt>wǎng</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">zhù / zhù / wǎng</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>住<rt>zhù</rt></ruby> = อาศัยอยู่ / พักอยู่</div>
+<div><ruby>注<rt>zhù</rt></ruby> = จด / ใส่ / หมายเหตุ</div>
+<div><ruby>往<rt>wǎng</rt></ruby> = ไปทาง / มุ่งไป</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>我住在泰国<rt>wǒ zhù zài Tài guó</rt></ruby></span><span class="thai">= ฉันอยู่ที่ประเทศไทย</span></div>
+<div class="ex"><span class="example-cn"><ruby>注意<rt>zhù yì</rt></ruby></span><span class="thai">= ระวัง / ใส่ใจ</span></div>
+<div class="ex"><span class="example-cn"><ruby>往前走<rt>wǎng qián zǒu</rt></ruby></span><span class="thai">= เดินไปข้างหน้า</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">13</span>
+            <span class="tag">ลักษณนามสำคัญ</span><br>
+            <ruby>课<rt>kè</rt></ruby><ruby>棵<rt>kē</rt></ruby><ruby>颗<rt>kē</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">kè / kē / kē</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>课<rt>kè</rt></ruby> = บทเรียน / คาบเรียน</div>
+<div><ruby>棵<rt>kē</rt></ruby> = ลักษณนามต้นไม้</div>
+<div><ruby>颗<rt>kē</rt></ruby> = ลักษณนามเม็ด / ลูกเล็ก / ดวง</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>上课<rt>shàng kè</rt></ruby></span><span class="thai">= เข้าเรียน</span></div>
+<div class="ex"><span class="example-cn"><ruby>一棵树<rt>yì kē shù</rt></ruby></span><span class="thai">= ต้นไม้หนึ่งต้น</span></div>
+<div class="ex"><span class="example-cn"><ruby>一颗糖<rt>yì kē táng</rt></ruby></span><span class="thai">= ลูกอมหนึ่งเม็ด</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">14</span>
+            <span class="tag">จำผิดบ่อย</span><br>
+            <ruby>钱<rt>qián</rt></ruby><ruby>线<rt>xiàn</rt></ruby><ruby>浅<rt>qiǎn</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">qián / xiàn / qiǎn</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>钱<rt>qián</rt></ruby> = เงิน</div>
+<div><ruby>线<rt>xiàn</rt></ruby> = เส้น / สาย</div>
+<div><ruby>浅<rt>qiǎn</rt></ruby> = ตื้น / สีอ่อน</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>多少钱<rt>duō shao qián</rt></ruby></span><span class="thai">= ราคาเท่าไร</span></div>
+<div class="ex"><span class="example-cn"><ruby>一条线<rt>yì tiáo xiàn</rt></ruby></span><span class="thai">= เส้นหนึ่งเส้น</span></div>
+<div class="ex"><span class="example-cn"><ruby>水很浅<rt>shuǐ hěn qiǎn</rt></ruby></span><span class="thai">= น้ำตื้นมาก</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">15</span>
+            <span class="tag">ใช้ทุกวัน</span><br>
+            <ruby>喝<rt>hē</rt></ruby><ruby>渴<rt>kě</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">hē / kě</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>喝<rt>hē</rt></ruby> = ดื่ม</div>
+<div><ruby>渴<rt>kě</rt></ruby> = กระหายน้ำ</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>喝水<rt>hē shuǐ</rt></ruby></span><span class="thai">= ดื่มน้ำ</span></div>
+<div class="ex"><span class="example-cn"><ruby>我渴了<rt>wǒ kě le</rt></ruby></span><span class="thai">= ฉันกระหายน้ำแล้ว</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">16</span>
+            <span class="tag">คน + ไม้</span><br>
+            <ruby>休<rt>xiū</rt></ruby><ruby>体<rt>tǐ</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">xiū / tǐ</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>休<rt>xiū</rt></ruby> = พัก</div>
+<div><ruby>体<rt>tǐ</rt></ruby> = ร่างกาย / รูปแบบ</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>休息<rt>xiū xi</rt></ruby></span><span class="thai">= พักผ่อน</span></div>
+<div class="ex"><span class="example-cn"><ruby>身体<rt>shēn tǐ</rt></ruby></span><span class="thai">= ร่างกาย</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">17</span>
+            <span class="tag">ต่างกันด้านบน</span><br>
+            <ruby>名<rt>míng</rt></ruby><ruby>各<rt>gè</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">míng / gè</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>名<rt>míng</rt></ruby> = ชื่อ / มีชื่อเสียง</div>
+<div><ruby>各<rt>gè</rt></ruby> = แต่ละ</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>名字<rt>míng zi</rt></ruby></span><span class="thai">= ชื่อ</span></div>
+<div class="ex"><span class="example-cn"><ruby>各位<rt>gè wèi</rt></ruby></span><span class="thai">= ทุกท่าน / แต่ละท่าน</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">18</span>
+            <span class="tag">เพิ่มขีดเปลี่ยนคำ</span><br>
+            <ruby>今<rt>jīn</rt></ruby><ruby>令<rt>lìng</rt></ruby><ruby>冷<rt>lěng</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">jīn / lìng / lěng</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>今<rt>jīn</rt></ruby> = วันนี้ / ปัจจุบัน</div>
+<div><ruby>令<rt>lìng</rt></ruby> = สั่ง / ทำให้</div>
+<div><ruby>冷<rt>lěng</rt></ruby> = หนาว / เย็น</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>今天<rt>jīn tiān</rt></ruby></span><span class="thai">= วันนี้</span></div>
+<div class="ex"><span class="example-cn"><ruby>命令<rt>mìng lìng</rt></ruby></span><span class="thai">= คำสั่ง</span></div>
+<div class="ex"><span class="example-cn"><ruby>很冷<rt>hěn lěng</rt></ruby></span><span class="thai">= หนาวมาก</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">19</span>
+            <span class="tag">มีหัวหญ้า</span><br>
+            <ruby>早<rt>zǎo</rt></ruby><ruby>草<rt>cǎo</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">zǎo / cǎo</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>早<rt>zǎo</rt></ruby> = เช้า / เร็ว</div>
+<div><ruby>草<rt>cǎo</rt></ruby> = หญ้า</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>早上好<rt>zǎo shang hǎo</rt></ruby></span><span class="thai">= อรุณสวัสดิ์</span></div>
+<div class="ex"><span class="example-cn"><ruby>小草<rt>xiǎo cǎo</rt></ruby></span><span class="thai">= ต้นหญ้าเล็ก ๆ</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">20</span>
+            <span class="tag">หน้าคล้ายมาก</span><br>
+            <ruby>右<rt>yòu</rt></ruby><ruby>石<rt>shí</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">yòu / shí</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>右<rt>yòu</rt></ruby> = ขวา</div>
+<div><ruby>石<rt>shí</rt></ruby> = หิน</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>右边<rt>yòu biān</rt></ruby></span><span class="thai">= ด้านขวา</span></div>
+<div class="ex"><span class="example-cn"><ruby>石头<rt>shí tou</rt></ruby></span><span class="thai">= ก้อนหิน</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">21</span>
+            <span class="tag">ต่างกันข้างล่าง</span><br>
+            <ruby>左<rt>zuǒ</rt></ruby><ruby>在<rt>zài</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">zuǒ / zài</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>左<rt>zuǒ</rt></ruby> = ซ้าย</div>
+<div><ruby>在<rt>zài</rt></ruby> = อยู่ / กำลัง</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>左边<rt>zuǒ biān</rt></ruby></span><span class="thai">= ด้านซ้าย</span></div>
+<div class="ex"><span class="example-cn"><ruby>我在这里<rt>wǒ zài zhè lǐ</rt></ruby></span><span class="thai">= ฉันอยู่ที่นี่</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">22</span>
+            <span class="tag">เพิ่มจุดเป็นอีกคำ</span><br>
+            <ruby>万<rt>wàn</rt></ruby><ruby>方<rt>fāng</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">wàn / fāng</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>万<rt>wàn</rt></ruby> = หมื่น</div>
+<div><ruby>方<rt>fāng</rt></ruby> = ทิศทาง / ด้าน / วิธี</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>一万<rt>yí wàn</rt></ruby></span><span class="thai">= หนึ่งหมื่น</span></div>
+<div class="ex"><span class="example-cn"><ruby>方向<rt>fāng xiàng</rt></ruby></span><span class="thai">= ทิศทาง</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">23</span>
+            <span class="tag">เส้นเอียงสำคัญ</span><br>
+            <ruby>开<rt>kāi</rt></ruby><ruby>井<rt>jǐng</rt></ruby><ruby>升<rt>shēng</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">kāi / jǐng / shēng</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>开<rt>kāi</rt></ruby> = เปิด</div>
+<div><ruby>井<rt>jǐng</rt></ruby> = บ่อน้ำ</div>
+<div><ruby>升<rt>shēng</rt></ruby> = ขึ้น / ลิตร</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>开门<rt>kāi mén</rt></ruby></span><span class="thai">= เปิดประตู</span></div>
+<div class="ex"><span class="example-cn"><ruby>水井<rt>shuǐ jǐng</rt></ruby></span><span class="thai">= บ่อน้ำ</span></div>
+<div class="ex"><span class="example-cn"><ruby>升级<rt>shēng jí</rt></ruby></span><span class="thai">= เลื่อนระดับ / อัปเกรด</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">24</span>
+            <span class="tag">ขีดเดียวต่างกัน</span><br>
+            <ruby>午<rt>wǔ</rt></ruby><ruby>牛<rt>niú</rt></ruby><ruby>年<rt>nián</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">wǔ / niú / nián</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>午<rt>wǔ</rt></ruby> = เที่ยง</div>
+<div><ruby>牛<rt>niú</rt></ruby> = วัว</div>
+<div><ruby>年<rt>nián</rt></ruby> = ปี</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>中午<rt>zhōng wǔ</rt></ruby></span><span class="thai">= ตอนเที่ยง</span></div>
+<div class="ex"><span class="example-cn"><ruby>牛奶<rt>niú nǎi</rt></ruby></span><span class="thai">= นมวัว</span></div>
+<div class="ex"><span class="example-cn"><ruby>今年<rt>jīn nián</rt></ruby></span><span class="thai">= ปีนี้</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">25</span>
+            <span class="tag">ขีดบน-ล่างกลับกัน</span><br>
+            <ruby>土<rt>tǔ</rt></ruby><ruby>士<rt>shì</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">tǔ / shì</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>土<rt>tǔ</rt></ruby> = ดิน</div>
+<div><ruby>士<rt>shì</rt></ruby> = บัณฑิต / สุภาพบุรุษ / นักรบ</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>土地<rt>tǔ dì</rt></ruby></span><span class="thai">= ที่ดิน</span></div>
+<div class="ex"><span class="example-cn"><ruby>护士<rt>hù shi</rt></ruby></span><span class="thai">= พยาบาล</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">26</span>
+            <span class="tag">ขีดบน-ล่างต่างกัน</span><br>
+            <ruby>未<rt>wèi</rt></ruby><ruby>末<rt>mò</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">wèi / mò</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>未<rt>wèi</rt></ruby> = ยังไม่ / อนาคต</div>
+<div><ruby>末<rt>mò</rt></ruby> = ปลาย / สุดท้าย</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>未来<rt>wèi lái</rt></ruby></span><span class="thai">= อนาคต</span></div>
+<div class="ex"><span class="example-cn"><ruby>周末<rt>zhōu mò</rt></ruby></span><span class="thai">= สุดสัปดาห์</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">27</span>
+            <span class="tag">มุมเอียงต่างกัน</span><br>
+            <ruby>人<rt>rén</rt></ruby><ruby>入<rt>rù</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">rén / rù</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>人<rt>rén</rt></ruby> = คน</div>
+<div><ruby>入<rt>rù</rt></ruby> = เข้า</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>中国人<rt>Zhōng guó rén</rt></ruby></span><span class="thai">= คนจีน</span></div>
+<div class="ex"><span class="example-cn"><ruby>入口<rt>rù kǒu</rt></ruby></span><span class="thai">= ทางเข้า</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">28</span>
+            <span class="tag">ช่องเปิดต่างกัน</span><br>
+            <ruby>己<rt>jǐ</rt></ruby><ruby>已<rt>yǐ</rt></ruby><ruby>巳<rt>sì</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">jǐ / yǐ / sì</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>己<rt>jǐ</rt></ruby> = ตนเอง</div>
+<div><ruby>已<rt>yǐ</rt></ruby> = แล้ว</div>
+<div><ruby>巳<rt>sì</rt></ruby> = กิ่งดินลำดับที่ 6</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>自己<rt>zì jǐ</rt></ruby></span><span class="thai">= ตนเอง</span></div>
+<div class="ex"><span class="example-cn"><ruby>已经<rt>yǐ jīng</rt></ruby></span><span class="thai">= แล้ว / เรียบร้อยแล้ว</span></div>
+<div class="ex"><span class="example-cn"><ruby>巳时<rt>sì shí</rt></ruby></span><span class="thai">= ช่วงเวลา 9-11 โมง</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">29</span>
+            <span class="tag">ไม้เปลี่ยนจุด</span><br>
+            <ruby>木<rt>mù</rt></ruby><ruby>本<rt>běn</rt></ruby><ruby>术<rt>shù</rt></ruby><ruby>末<rt>mò</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">mù / běn / shù / mò</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>木<rt>mù</rt></ruby> = ไม้</div>
+<div><ruby>本<rt>běn</rt></ruby> = เล่ม / ราก / ต้นกำเนิด</div>
+<div><ruby>术<rt>shù</rt></ruby> = วิชา / เทคนิค</div>
+<div><ruby>末<rt>mò</rt></ruby> = ปลาย</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>木头<rt>mù tou</rt></ruby></span><span class="thai">= ไม้</span></div>
+<div class="ex"><span class="example-cn"><ruby>一本书<rt>yì běn shū</rt></ruby></span><span class="thai">= หนังสือหนึ่งเล่ม</span></div>
+<div class="ex"><span class="example-cn"><ruby>艺术<rt>yì shù</rt></ruby></span><span class="thai">= ศิลปะ</span></div>
+<div class="ex"><span class="example-cn"><ruby>周末<rt>zhōu mò</rt></ruby></span><span class="thai">= สุดสัปดาห์</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">30</span>
+            <span class="tag">จุดเดียวเปลี่ยนคำ</span><br>
+            <ruby>大<rt>dà</rt></ruby><ruby>太<rt>tài</rt></ruby><ruby>犬<rt>quǎn</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">dà / tài / quǎn</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>大<rt>dà</rt></ruby> = ใหญ่</div>
+<div><ruby>太<rt>tài</rt></ruby> = มาก / เกินไป</div>
+<div><ruby>犬<rt>quǎn</rt></ruby> = สุนัข ใช้ในภาษาเขียน</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>大学<rt>dà xué</rt></ruby></span><span class="thai">= มหาวิทยาลัย</span></div>
+<div class="ex"><span class="example-cn"><ruby>太好了<rt>tài hǎo le</rt></ruby></span><span class="thai">= ดีมากเลย</span></div>
+<div class="ex"><span class="example-cn"><ruby>犬类<rt>quǎn lèi</rt></ruby></span><span class="thai">= สัตว์ตระกูลสุนัข</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">31</span>
+            <span class="tag">จุดกับขีดต่างกัน</span><br>
+            <ruby>王<rt>wáng</rt></ruby><ruby>玉<rt>yù</rt></ruby><ruby>主<rt>zhǔ</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">wáng / yù / zhǔ</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>王<rt>wáng</rt></ruby> = กษัตริย์</div>
+<div><ruby>玉<rt>yù</rt></ruby> = หยก</div>
+<div><ruby>主<rt>zhǔ</rt></ruby> = เจ้าของ / หลัก</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>王子<rt>wáng zǐ</rt></ruby></span><span class="thai">= เจ้าชาย</span></div>
+<div class="ex"><span class="example-cn"><ruby>玉石<rt>yù shí</rt></ruby></span><span class="thai">= หยก / หินหยก</span></div>
+<div class="ex"><span class="example-cn"><ruby>主人<rt>zhǔ rén</rt></ruby></span><span class="thai">= เจ้าของ</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">32</span>
+            <span class="tag">ขีดบนต่างกัน</span><br>
+            <ruby>天<rt>tiān</rt></ruby><ruby>夫<rt>fū</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">tiān / fū</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>天<rt>tiān</rt></ruby> = ฟ้า / วัน</div>
+<div><ruby>夫<rt>fū</rt></ruby> = สามี / ชาย</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>今天<rt>jīn tiān</rt></ruby></span><span class="thai">= วันนี้</span></div>
+<div class="ex"><span class="example-cn"><ruby>丈夫<rt>zhàng fu</rt></ruby></span><span class="thai">= สามี</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">33</span>
+            <span class="tag">ขีดบนเพิ่มมา</span><br>
+            <ruby>白<rt>bái</rt></ruby><ruby>百<rt>bǎi</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">bái / bǎi</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>白<rt>bái</rt></ruby> = ขาว</div>
+<div><ruby>百<rt>bǎi</rt></ruby> = ร้อย</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>白色<rt>bái sè</rt></ruby></span><span class="thai">= สีขาว</span></div>
+<div class="ex"><span class="example-cn"><ruby>一百<rt>yì bǎi</rt></ruby></span><span class="thai">= หนึ่งร้อย</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">34</span>
+            <span class="tag">เส้นกลางต่างกัน</span><br>
+            <ruby>由<rt>yóu</rt></ruby><ruby>甲<rt>jiǎ</rt></ruby><ruby>申<rt>shēn</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">yóu / jiǎ / shēn</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>由<rt>yóu</rt></ruby> = โดย / จาก / เนื่องจาก</div>
+<div><ruby>甲<rt>jiǎ</rt></ruby> = อันดับหนึ่ง / เกราะ / ฝ่าย ก</div>
+<div><ruby>申<rt>shēn</rt></ruby> = ยื่นคำขอ / รายงาน</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>由于<rt>yóu yú</rt></ruby></span><span class="thai">= เนื่องจาก</span></div>
+<div class="ex"><span class="example-cn"><ruby>甲方<rt>jiǎ fāng</rt></ruby></span><span class="thai">= ฝ่าย ก</span></div>
+<div class="ex"><span class="example-cn"><ruby>申请<rt>shēn qǐng</rt></ruby></span><span class="thai">= สมัคร / ยื่นคำขอ</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">35</span>
+            <span class="tag">ขีดบนเพิ่มมา</span><br>
+            <ruby>目<rt>mù</rt></ruby><ruby>自<rt>zì</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">mù / zì</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>目<rt>mù</rt></ruby> = ตา / รายการ / เป้าหมาย</div>
+<div><ruby>自<rt>zì</rt></ruby> = ตนเอง / จาก</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>目的<rt>mù dì</rt></ruby></span><span class="thai">= เป้าหมาย</span></div>
+<div class="ex"><span class="example-cn"><ruby>自己<rt>zì jǐ</rt></ruby></span><span class="thai">= ตนเอง</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">36</span>
+            <span class="tag">ขาล่างต่างกัน</span><br>
+            <ruby>贝<rt>bèi</rt></ruby><ruby>见<rt>jiàn</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">bèi / jiàn</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>贝<rt>bèi</rt></ruby> = หอยเบี้ย / มักเกี่ยวกับเงิน</div>
+<div><ruby>见<rt>jiàn</rt></ruby> = เห็น / พบ</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>宝贝<rt>bǎo bèi</rt></ruby></span><span class="thai">= ของล้ำค่า / ลูกรัก</span></div>
+<div class="ex"><span class="example-cn"><ruby>再见<rt>zài jiàn</rt></ruby></span><span class="thai">= พบกันใหม่</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">37</span>
+            <span class="tag">โค้งต่างกันนิดเดียว</span><br>
+            <ruby>刀<rt>dāo</rt></ruby><ruby>力<rt>lì</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">dāo / lì</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>刀<rt>dāo</rt></ruby> = มีด</div>
+<div><ruby>力<rt>lì</rt></ruby> = แรง / กำลัง</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>小刀<rt>xiǎo dāo</rt></ruby></span><span class="thai">= มีดเล็ก</span></div>
+<div class="ex"><span class="example-cn"><ruby>努力<rt>nǔ lì</rt></ruby></span><span class="thai">= พยายาม</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">38</span>
+            <span class="tag">เสียงเหมือนกัน</span><br>
+            <ruby>带<rt>dài</rt></ruby><ruby>戴<rt>dài</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">dài / dài</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>带<rt>dài</rt></ruby> = พา / นำ / พกติดตัว</div>
+<div><ruby>戴<rt>dài</rt></ruby> = สวมใส่บนร่างกาย</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>带手机<rt>dài shǒu jī</rt></ruby></span><span class="thai">= พกโทรศัพท์</span></div>
+<div class="ex"><span class="example-cn"><ruby>戴眼镜<rt>dài yǎn jìng</rt></ruby></span><span class="thai">= ใส่แว่น</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">39</span>
+            <span class="tag">การเปิด-ปิด</span><br>
+            <ruby>合<rt>hé</rt></ruby><ruby>关<rt>guān</rt></ruby><ruby>开<rt>kāi</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">hé / guān / kāi</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>合<rt>hé</rt></ruby> = ประกบ / รวมกัน</div>
+<div><ruby>关<rt>guān</rt></ruby> = ปิด</div>
+<div><ruby>开<rt>kāi</rt></ruby> = เปิด</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>合上书<rt>hé shàng shū</rt></ruby></span><span class="thai">= ปิดหนังสือ</span></div>
+<div class="ex"><span class="example-cn"><ruby>关灯<rt>guān dēng</rt></ruby></span><span class="thai">= ปิดไฟ</span></div>
+<div class="ex"><span class="example-cn"><ruby>开灯<rt>kāi dēng</rt></ruby></span><span class="thai">= เปิดไฟ</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">40</span>
+            <span class="tag">เสียงคล้าย</span><br>
+            <ruby>知道<rt>zhī dào</rt></ruby><ruby>迟到<rt>chí dào</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">zhī dào / chí dào</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>知道<rt>zhī dào</rt></ruby> = รู้ / ทราบ</div>
+<div><ruby>迟到<rt>chí dào</rt></ruby> = มาสาย</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>我知道<rt>wǒ zhī dào</rt></ruby></span><span class="thai">= ฉันรู้</span></div>
+<div class="ex"><span class="example-cn"><ruby>他迟到了<rt>tā chí dào le</rt></ruby></span><span class="thai">= เขามาสายแล้ว</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td data-label="กลุ่มคำ" class="group">
+            <span class="num">41</span>
+            <span class="tag">คำเกี่ยวกับน้ำ</span><br>
+            <ruby>河<rt>hé</rt></ruby><ruby>江<rt>jiāng</rt></ruby><ruby>川<rt>chuān</rt></ruby>
+          </td>
+          <td data-label="Pinyin" class="pinyin-only">hé / jiāng / chuān</td>
+          <td data-label="ความหมาย" class="meaning">
+            <div><ruby>河<rt>hé</rt></ruby> = แม่น้ำทั่วไป</div>
+<div><ruby>江<rt>jiāng</rt></ruby> = แม่น้ำใหญ่</div>
+<div><ruby>川<rt>chuān</rt></ruby> = สายน้ำ / ที่ราบระหว่างภูเขา</div>
+          </td>
+          <td data-label="ตัวอย่าง" class="examples">
+            <div class="ex"><span class="example-cn"><ruby>黄河<rt>Huáng Hé</rt></ruby></span><span class="thai">= แม่น้ำฮวงโห</span></div>
+<div class="ex"><span class="example-cn"><ruby>长江<rt>Cháng Jiāng</rt></ruby></span><span class="thai">= แม่น้ำแยงซี</span></div>
+<div class="ex"><span class="example-cn"><ruby>四川<rt>Sì Chuān</rt></ruby></span><span class="thai">= เสฉวน</span></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <section class="knowledge">
+      <h2>เสริมความรู้: ตัวจีนที่คนเรียนใหม่สับสนบ่อย</h2>
+      <p class="knowledge-intro">ได้เลยหลวงพี่ นี่คือ 30 คู่หรือกลุ่มตัวจีนที่คนเรียนใหม่สับสนบ่อยมาก</p>
+      <div class="quick-meanings">
+        <div><ruby>找<rt>zhǎo</rt></ruby> = หา</div>
+        <div><ruby>我<rt>wǒ</rt></ruby> = ฉัน</div>
+        <div><ruby>钱<rt>qián</rt></ruby> = เงิน</div>
+      </div>
+
+      <table class="compact-table">
+        <thead>
+          <tr>
+            <th>ตัวจีน</th>
+            <th>Pinyin</th>
+            <th>ความหมาย</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">1</span> <ruby>我<rt>wǒ</rt></ruby> / <ruby>找<rt>zhǎo</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">wǒ / zhǎo</td>
+            <td data-label="ความหมาย" class="meaning">ฉัน / หา</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">2</span> <ruby>未<rt>wèi</rt></ruby> / <ruby>末<rt>mò</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">wèi / mò</td>
+            <td data-label="ความหมาย" class="meaning">ยังไม่ / ปลาย</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">3</span> <ruby>土<rt>tǔ</rt></ruby> / <ruby>士<rt>shì</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">tǔ / shì</td>
+            <td data-label="ความหมาย" class="meaning">ดิน / นักปราชญ์</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">4</span> <ruby>己<rt>jǐ</rt></ruby> / <ruby>已<rt>yǐ</rt></ruby> / <ruby>巳<rt>sì</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">jǐ / yǐ / sì</td>
+            <td data-label="ความหมาย" class="meaning">ตนเอง / แล้ว / กิ่งที่ 6</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">5</span> <ruby>人<rt>rén</rt></ruby> / <ruby>入<rt>rù</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">rén / rù</td>
+            <td data-label="ความหมาย" class="meaning">คน / เข้า</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">6</span> <ruby>大<rt>dà</rt></ruby> / <ruby>太<rt>tài</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">dà / tài</td>
+            <td data-label="ความหมาย" class="meaning">ใหญ่ / มากเกินไป</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">7</span> <ruby>天<rt>tiān</rt></ruby> / <ruby>夫<rt>fū</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">tiān / fū</td>
+            <td data-label="ความหมาย" class="meaning">ฟ้า / สามี</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">8</span> <ruby>木<rt>mù</rt></ruby> / <ruby>本<rt>běn</rt></ruby> / <ruby>末<rt>mò</rt></ruby> / <ruby>未<rt>wèi</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">mù / běn / mò / wèi</td>
+            <td data-label="ความหมาย" class="meaning">ไม้ / รากฐาน / ปลาย / ยังไม่</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">9</span> <ruby>日<rt>rì</rt></ruby> / <ruby>目<rt>mù</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">rì / mù</td>
+            <td data-label="ความหมาย" class="meaning">พระอาทิตย์ / ตา</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">10</span> <ruby>口<rt>kǒu</rt></ruby> / <ruby>回<rt>huí</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">kǒu / huí</td>
+            <td data-label="ความหมาย" class="meaning">ปาก / กลับ</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">11</span> <ruby>白<rt>bái</rt></ruby> / <ruby>百<rt>bǎi</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">bái / bǎi</td>
+            <td data-label="ความหมาย" class="meaning">ขาว / ร้อย</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">12</span> <ruby>千<rt>qiān</rt></ruby> / <ruby>干<rt>gān</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">qiān / gān</td>
+            <td data-label="ความหมาย" class="meaning">พัน / แห้ง</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">13</span> <ruby>牛<rt>niú</rt></ruby> / <ruby>午<rt>wǔ</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">niú / wǔ</td>
+            <td data-label="ความหมาย" class="meaning">วัว / เที่ยง</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">14</span> <ruby>王<rt>wáng</rt></ruby> / <ruby>玉<rt>yù</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">wáng / yù</td>
+            <td data-label="ความหมาย" class="meaning">กษัตริย์ / หยก</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">15</span> <ruby>田<rt>tián</rt></ruby> / <ruby>由<rt>yóu</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">tián / yóu</td>
+            <td data-label="ความหมาย" class="meaning">นา / จาก</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">16</span> <ruby>申<rt>shēn</rt></ruby> / <ruby>电<rt>diàn</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">shēn / diàn</td>
+            <td data-label="ความหมาย" class="meaning">ยื่นออก / ไฟฟ้า</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">17</span> <ruby>人<rt>rén</rt></ruby> / <ruby>个<rt>gè</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">rén / gè</td>
+            <td data-label="ความหมาย" class="meaning">คน / ลักษณนาม</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">18</span> <ruby>了<rt>le</rt></ruby> / <ruby>子<rt>zǐ</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">le / zǐ</td>
+            <td data-label="ความหมาย" class="meaning">แล้ว / ลูก</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">19</span> <ruby>问<rt>wèn</rt></ruby> / <ruby>间<rt>jiān</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">wèn / jiān</td>
+            <td data-label="ความหมาย" class="meaning">ถาม / ระหว่าง</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">20</span> <ruby>请<rt>qǐng</rt></ruby> / <ruby>情<rt>qíng</rt></ruby> / <ruby>晴<rt>qíng</rt></ruby> / <ruby>清<rt>qīng</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">qǐng / qíng / qíng / qīng</td>
+            <td data-label="ความหมาย" class="meaning">เชิญ / ความรู้สึก / ฟ้าใส / สะอาด</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">21</span> <ruby>他<rt>tā</rt></ruby> / <ruby>她<rt>tā</rt></ruby> / <ruby>它<rt>tā</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">tā</td>
+            <td data-label="ความหมาย" class="meaning">เขา / เธอ / มัน</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">22</span> <ruby>喝<rt>hē</rt></ruby> / <ruby>渴<rt>kě</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">hē / kě</td>
+            <td data-label="ความหมาย" class="meaning">ดื่ม / กระหาย</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">23</span> <ruby>买<rt>mǎi</rt></ruby> / <ruby>卖<rt>mài</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">mǎi / mài</td>
+            <td data-label="ความหมาย" class="meaning">ซื้อ / ขาย</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">24</span> <ruby>看<rt>kàn</rt></ruby> / <ruby>着<rt>zhe</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">kàn / zhe</td>
+            <td data-label="ความหมาย" class="meaning">ดู / กำลัง</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">25</span> <ruby>休<rt>xiū</rt></ruby> / <ruby>体<rt>tǐ</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">xiū / tǐ</td>
+            <td data-label="ความหมาย" class="meaning">พัก / ร่างกาย</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">26</span> <ruby>近<rt>jìn</rt></ruby> / <ruby>进<rt>jìn</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">jìn / jìn</td>
+            <td data-label="ความหมาย" class="meaning">ใกล้ / เข้า</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">27</span> <ruby>已经<rt>yǐ jīng</rt></ruby> / <ruby>以前<rt>yǐ qián</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">yǐjīng / yǐqián</td>
+            <td data-label="ความหมาย" class="meaning">แล้ว / ก่อน</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">28</span> <ruby>左<rt>zuǒ</rt></ruby> / <ruby>右<rt>yòu</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">zuǒ / yòu</td>
+            <td data-label="ความหมาย" class="meaning">ซ้าย / ขวา</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">29</span> <ruby>犬<rt>quǎn</rt></ruby> / <ruby>大<rt>dà</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">quǎn / dà</td>
+            <td data-label="ความหมาย" class="meaning">สุนัข / ใหญ่</td>
+          </tr>
+          <tr>
+            <td data-label="ตัวจีน" class="group"><span class="num">30</span> <ruby>鸟<rt>niǎo</rt></ruby> / <ruby>乌<rt>wū</rt></ruby></td>
+            <td data-label="Pinyin" class="pinyin-only">niǎo / wū</td>
+            <td data-label="ความหมาย" class="meaning">นก / ดำ</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
