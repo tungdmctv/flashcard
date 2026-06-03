@@ -90,7 +90,7 @@
         <p v-else class="text-6xl md:text-7xl font-extrabold mb-4 py-8 leading-tight" v-html="formattedMeaning"></p>
 
         <div v-if="showImage && currentCard.imageUrl" class="quiz-image-wrap">
-          <img :src="currentCard.imageUrl" :alt="currentCard.word" class="quiz-image" />
+          <img :src="currentCard.imageUrl" :alt="currentCard.word" class="quiz-image" @error="hideBrokenImage" />
         </div>
 
         <div v-if="isRevealed" class="w-full">
@@ -130,9 +130,10 @@
       <button class="btn control-btn" @click.stop="speak(selectLangToSpeak)">
         <Icon name="material-symbols:volume-up" /> อ่านออกเสียง
       </button>
-      <button v-if="currentCard?.pinyin" class="btn control-btn" @click.stop="showPinyin = !showPinyin">
-        <Icon name="material-symbols:translate" /> {{ showPinyin ? 'ซ่อน Pinyin' : 'แสดง Pinyin' }}
-      </button>
+      <label v-if="currentCard?.pinyin" class="btn control-btn">
+        <input v-model="showPinyin" type="checkbox" class="checkbox checkbox-sm" />
+        <Icon name="material-symbols:translate" /> Pinyin
+      </label>
     </div>
 
 
@@ -271,7 +272,7 @@ const showImage = ref(false)
 const sessionCorrectCount = ref(0)
 const sessionIncorrectCount = ref(0)
 const sessionAnsweredCount = computed(() => sessionCorrectCount.value + sessionIncorrectCount.value)
-const showPinyin = ref(false)
+const showPinyin = ref(true)
 const isHistoryView = ref(false)
 const resumeCardId = ref<string | null>(null)
 const repeatState = ref<Record<string, { dueIn: number }>>({})
@@ -321,6 +322,12 @@ const currentCard = computed(() => displayQueue.value[currentIndex.value] || nul
 
 // Methods
 const allCards = ref<Card[]>([])
+
+function hideBrokenImage(event: Event) {
+  const image = event.target as HTMLImageElement | null
+  if (image) image.style.display = 'none'
+}
+
 async function loadCards(options: { preserveCurrent?: boolean } = {}) {
   const currentCardId = options.preserveCurrent ? currentCard.value?._id || null : null
   const res = await db.allDocs({ include_docs: true })
@@ -432,7 +439,6 @@ function rebuildQueue(preferredCardId: string | null = null) {
     : -1
   currentIndex.value = preferredIndex >= 0 ? preferredIndex : (displayQueue.value.length ? 0 : -1)
   isRevealed.value = false
-  showPinyin.value = false
   // Clean queues when filter changes or mode changes
   const validIds = new Set(displayQueue.value.map(c => c._id).filter(Boolean) as string[])
   forcedQueue.value = forcedQueue.value.filter(id => validIds.has(id))
@@ -455,7 +461,6 @@ function next() {
     if (forcedIndex >= 0) {
       currentIndex.value = forcedIndex
       isRevealed.value = false
-      showPinyin.value = false
       historyIndex.value = -1
       return
     }
@@ -472,7 +477,6 @@ function next() {
   }
 
   isRevealed.value = false
-  showPinyin.value = false
   historyIndex.value = -1
 }
 
@@ -554,7 +558,6 @@ function toggleMode() {
 function togglePromptMode() {
   promptMode.value = promptMode.value === 'word' ? 'meaning' : 'word'
   isRevealed.value = false
-  showPinyin.value = false
 }
 
 function toggleReveal() {
@@ -615,7 +618,6 @@ function navigateHistory(direction: number) {
     if (cardIndex >= 0) {
       currentIndex.value = cardIndex
       isRevealed.value = true
-      showPinyin.value = false
       isHistoryView.value = true
     } else {
       const fallbackCard = cards.value.find(c => c._id === cardId)
@@ -623,7 +625,6 @@ function navigateHistory(direction: number) {
         displayQueue.value = [fallbackCard, ...displayQueue.value]
         currentIndex.value = 0
         isRevealed.value = true
-        showPinyin.value = false
         isHistoryView.value = true
       }
     }
@@ -643,7 +644,6 @@ function resumeFromHistory() {
   isHistoryView.value = false
   historyIndex.value = -1
   isRevealed.value = false
-  showPinyin.value = false
 }
 
 watch(selectedTags, () => {

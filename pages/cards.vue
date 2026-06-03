@@ -65,7 +65,7 @@
             <h2 class="text-5xl">{{ card.word }}</h2>
 
           </div>
-          <img v-if="card.imageUrl" :src="card.imageUrl" :alt="card.word"
+          <img v-if="card.imageUrl" :src="card.imageUrl" :alt="card.word" @error="hideBrokenImage"
             class="mt-3 h-40 w-full rounded-lg border border-base-300 bg-white object-contain" />
           <p v-if="card.pinyin" class="text-sm opacity-70">พินอิน: {{ card.pinyin }}</p>
           <p>{{ card.meaning }}</p>
@@ -275,6 +275,11 @@ function showDeleteConfirm(card: Card) {
   showDeleteModal.value = true
 }
 function cancelDelete() { showDeleteModal.value = false; cardToDelete.value = undefined }
+
+function hideBrokenImage(event: Event) {
+  const image = event.target as HTMLImageElement | null
+  if (image) image.style.display = 'none'
+}
 
 // ----- CRUD -----
 async function loadCards() {
