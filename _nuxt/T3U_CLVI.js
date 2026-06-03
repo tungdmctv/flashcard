@@ -1,0 +1,1 @@
+import{x as a,y as s,z as r,A as u,B as o}from"./IHm5ce_6.js";function i(e){const t=e||s();return t?.ssrContext?.head||t?.runWithContext(()=>{if(r())return u(o)})}function c(e,t={}){const n=i(t.nuxt);if(n)return a(e,{head:n,...t})}export{c as u};
